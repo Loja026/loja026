@@ -43,15 +43,16 @@ $mail = new PHPMailer(true);
 try {
     // Habilita o modo debug para vermos exatamente o que está acontecendo
     $mail->SMTPDebug = SMTP::DEBUG_SERVER;
-    $mail->Debugoutput = 'html'; // Formata a saída do debug em HTML
+    $mail->Debugoutput = 'html';
+    $mail->Timeout = 10; // Adiciona timeout de 10 segundos
 
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = $MeuEmail;
     $mail->Password = $MinhaSenha;
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port = 465;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Tenta TLS
+    $mail->Port = 587; // Tenta porta 587
 
     // Apenas testando a conexão com o servidor SMTP
     echo "<h3>Testando conexão com smtp.gmail.com...</h3>";
