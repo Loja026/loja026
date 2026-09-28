@@ -64,14 +64,14 @@ $texto = $x;
 try {
 	//$mail->SMTPDebug = SMTP::DEBUG_SERVER;
 	$mail->isSMTP();
-	$mail->Host = 'smtp.gmail.com';
+	$mail->Host = 'smtp.resend.com';
 	$mail->SMTPAuth = true;
-	$mail->Username = "$MeuEmail"; // seu email marketing
-	$mail->Password = "$MinhaSenha"; // senha marketing
+	$mail->Username = 'resend'; // Username no Resend é sempre 'resend'
+	$mail->Password = $MinhaSenha; // Senha vinda do banco de dados
 	$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
 	$mail->Port = 465;
  
-	$mail->setFrom("$MeuEmail", "$loja"); // seu email marketing novamente
+	$mail->setFrom('onboarding@resend.dev', "$loja"); // O Resend exige o email verificado ou onboarding no modo teste
 	$mail->addAddress("$emailCliente"); //email do cliente
  
 	$mail->isHTML(true);
