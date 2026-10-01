@@ -15,7 +15,7 @@ $adyen_api_key = "SUA_API_KEY_ADYEN";
 $dlocal_api_key = "SUA_API_KEY_DLOCAL";
 
 // Buscar PIXs que ainda estão aguardando pagamento
-$stmt = $pdo->query("SELECT id, codigo FROM pix_tabela_codigos WHERE status_pagamento = 'RESERVADO'");
+$stmt = $pdo->query("SELECT id, codigo FROM pix_tabela_codigos WHERE status_pagamento = 'RESERVADO' AND criado_em >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)");
 $pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($pedidos as $pedido) {

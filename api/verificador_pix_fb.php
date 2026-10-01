@@ -9,7 +9,7 @@ if (!$conn) {
 }
 
 // 1. Busca todos os PIXs que estão aguardando pagamento
-$sql = "SELECT id, codigo FROM pix_tabela_codigos WHERE status_pagamento IN ('RESERVADO', 'DISPONIVEL')";
+$sql = "SELECT id, codigo FROM pix_tabela_codigos WHERE status_pagamento IN ('RESERVADO', 'DISPONIVEL') AND criado_em >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)";
 
 // Se foi passado um ID específico via AJAX, otimiza para buscar só ele
 if (isset($_GET['id'])) {
@@ -88,7 +88,7 @@ foreach ($pedidos as $pedido) {
             
             // 5. Marca como pago também nas Ordens de Pagamento (pixgerado) para aparecer no Painel
             $codigoSafe = mysqli_real_escape_string($conn, $codigoPix);
-            $stmtOrdem = "UPDATE pixgerado SET status = 'pago' WHERE pix_code = '$codigoSafe' AND status NOT IN ('pago','paid','approved','completed','success')";
+            $stmtOrdem = "UPDATE pixgerado SET status = 'pago' WHERE pix_code = '$codigoSafe' AND status NOT IN ('pago','paid','approved','completed','success') AND data_criacao >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)";
             mysqli_query($conn, $stmtOrdem);
             
             $resultados[] = ["id" => $pedido['id'], "status" => "PAGO", "url_testada" => $urlExtraida];
