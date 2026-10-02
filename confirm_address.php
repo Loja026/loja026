@@ -205,16 +205,16 @@ $textozap = isset($textozap) ? $textozap : '';
                         </div>
 
                         <div class="form-group full" style="margin-bottom: 20px;">
+                            <label class="form-label" for="email" style="font-weight: 500;">E-mail</label>
+                            <input type="email" id="email" class="form-control" placeholder="Ex: seu@email.com" required>
+                        </div>
+
+                        <div class="form-group full" style="margin-bottom: 20px;">
                             <label class="form-label" for="telefone" style="font-weight: 500;">Telefone de contato</label>
                             <div style="display: flex; align-items: center; border: 1px solid #bfbfbf; border-radius: 6px; overflow: hidden; height: 40px; background: #fff;">
                                 <span style="background: #f5f5f5; padding: 0 12px; font-size: 15px; color: #333; height: 100%; display: flex; align-items: center; border-right: 1px solid #bfbfbf;">BR+55</span>
                                 <input type="tel" id="telefone" class="form-control" placeholder="(11) 96123-4567" required style="border: none; border-radius: 0; outline: none; box-shadow: none;">
                             </div>
-                        </div>
-
-                        <div class="form-group full" style="margin-bottom: 20px; display: none;">
-                            <label class="form-label" for="email">E-mail</label>
-                            <input type="email" id="email" class="form-control" placeholder="Ex: seu@email.com" value="cliente@email.com">
                         </div>
                         <div class="form-group full" style="margin-bottom: 20px; display: none;">
                             <label class="form-label" for="cpf">CPF</label>
