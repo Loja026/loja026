@@ -630,8 +630,9 @@ switch($acao){
 				$btn_email = "";
 				if (!empty($email) && $email !== '-') {
 					$msg_email_body = "Olá " . $rowx["nome"] . "!\n\nVi que você iniciou o pedido do " . $produto . " (" . $valortotal . ") na nossa loja e não concluiu.\n\nLink do seu pedido:\n" . $link_prod . "\n\nVocê ficou com alguma dúvida ou precisa de ajuda para concluir?\nEstamos à disposição!";
-					$email_link = "mailto:" . $email . "?subject=" . rawurlencode("Seu pedido na nossa loja") . "&body=" . rawurlencode($msg_email_body);
-					$btn_email = '<a href="'.$email_link.'" target="_blank" class="btn btn-sm bg-gradient-info mb-0 px-3 py-1 text-xs font-weight-bold" title="Enviar E-mail"><i class="material-icons text-sm" style="vertical-align: middle;">email</i> E-mail</a>';
+					// Abre diretamente no Gmail pelo navegador (reconhece o email logado)
+					$email_link = "https://mail.google.com/mail/?view=cm&fs=1&to=" . urlencode($email) . "&su=" . rawurlencode("Seu pedido na nossa loja") . "&body=" . rawurlencode($msg_email_body);
+					$btn_email = '<a href="'.$email_link.'" target="_blank" class="btn btn-sm bg-gradient-info mb-0 px-3 py-1 text-xs font-weight-bold" title="Enviar E-mail via Gmail"><i class="material-icons text-sm" style="vertical-align: middle;">email</i> E-mail</a>';
 				}
 						
 				echo '<tr>
