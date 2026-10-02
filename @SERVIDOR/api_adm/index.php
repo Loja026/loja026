@@ -1841,8 +1841,8 @@ break;
                 $mail->Host = 'smtp.gmail.com';
                 $mail->Username = $smtp_user;
                 $mail->Password = $smtp_pass;
-                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
-                $mail->Port = 465;
+                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
             } else {
                 // Default para Resend
                 $mail->Host = 'smtp.resend.com';
