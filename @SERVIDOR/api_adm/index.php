@@ -624,7 +624,14 @@ switch($acao){
 					$msg_zap = "Olá " . $rowx["nome"] . "! Tudo bem?\n\nVi que você iniciou o pedido do *" . $produto . "* (" . $valortotal . ") na nossa loja.\n\n👉 *Link do seu pedido:*\n" . $link_prod . "\n\nVocê ficou com alguma dúvida ou precisa de ajuda para concluir?\nEstamos à disposição!";
 					$msg_encoded = rawurlencode($msg_zap);
 					$zap_link = "https://wa.me/" . $zap_full . "?text=" . $msg_encoded;
-					$btn_whatsapp = '<a href="'.$zap_link.'" target="_blank" class="btn btn-sm bg-gradient-success mb-0 me-1 px-3 py-1 text-xs font-weight-bold" title="Chamar no WhatsApp"><i class="fab fa-whatsapp me-1" style="font-size:14px;"></i> Chamar</a>';
+					$btn_whatsapp = '<a href="'.$zap_link.'" target="_blank" class="btn btn-sm bg-gradient-success mb-0 px-3 py-1 text-xs font-weight-bold" title="Chamar no WhatsApp"><i class="fab fa-whatsapp me-1" style="font-size:14px;"></i> WhatsApp</a>';
+				}
+
+				$btn_email = "";
+				if (!empty($email) && $email !== '-') {
+					$msg_email_body = "Olá " . $rowx["nome"] . "!\n\nVi que você iniciou o pedido do " . $produto . " (" . $valortotal . ") na nossa loja e não concluiu.\n\nLink do seu pedido:\n" . $link_prod . "\n\nVocê ficou com alguma dúvida ou precisa de ajuda para concluir?\nEstamos à disposição!";
+					$email_link = "mailto:" . $email . "?subject=" . rawurlencode("Seu pedido na nossa loja") . "&body=" . rawurlencode($msg_email_body);
+					$btn_email = '<a href="'.$email_link.'" target="_blank" class="btn btn-sm bg-gradient-info mb-0 px-3 py-1 text-xs font-weight-bold" title="Enviar E-mail"><i class="material-icons text-sm" style="vertical-align: middle;">email</i> E-mail</a>';
 				}
 						
 				echo '<tr>
@@ -643,7 +650,7 @@ switch($acao){
 					  
 					  <td class="align-middle text-center">
 						<h6 class="mb-0 text-sm text-white">'.$celular.'</h6>
-						<div class="mt-1">'.$btn_whatsapp.'</div>
+						<div class="mt-1 d-flex justify-content-center gap-1 flex-wrap">'.$btn_whatsapp.$btn_email.'</div>
 					  </td>
 				 
 					  <td class="align-middle text-center">
