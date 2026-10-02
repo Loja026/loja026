@@ -61,43 +61,82 @@ $x = str_replace('$cep', $cep, $x);
 $texto = $x;		
 		
 		
-try {
-	//$mail->SMTPDebug = SMTP::DEBUG_SERVER;
-	$mail->isSMTP();
-	
-	// Verifica se é Gmail
-	if (strpos(strtolower($MeuEmail), '@gmail.com') !== false) {
-		$mail->Host = 'smtp.gmail.com';
-		$mail->Username = $MeuEmail;
-		$mail->Password = $MinhaSenha;
-		$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-		$mail->Port = 465;
-		$mail->setFrom($MeuEmail, "$loja");
-	} else {
-		// Default para Resend (Railway permite porta 2525)
-		$mail->Host = 'smtp.resend.com';
-		$mail->Username = 'resend'; // Username no Resend é sempre 'resend'
-		$mail->Password = $MinhaSenha; // Senha vinda do banco de dados
-		$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-		$mail->Port = 2525;
-		$mail->setFrom('onboarding@resend.dev', "$loja"); // O Resend exige o email verificado ou onboarding no modo teste
-	}
-	
-	$mail->SMTPAuth = true;
-	$mail->addAddress("$emailCliente"); //email do cliente
- 
-	$mail->isHTML(true);
-	$mail->Subject = utf8_decode("$texto1email id:$idCliente");
-	$mail->Body = utf8_decode("$texto");
-	//$mail->AltBody = 'Chegou o email teste do Canal TI';
- 
-	if($mail->send()) {
+if (strtolower($MeuEmail) === 'sendpulse') {
+	$payload = json_encode([
+		"email" => [
+			"html" => $texto,
+			"text" => strip_tags($texto),
+			"subject" => "$texto1email id:$idCliente",
+			"from" => [
+				"name" => $loja,
+				"email" => "nao-responda@seu-dominio.com" // Você precisa usar um e-mail validado no SendPulse
+			],
+			"to" => [
+				[
+					"name" => $nome,
+					"email" => $emailCliente
+				]
+			]
+		]
+	]);
+
+	$ch = curl_init('https://api.sendpulse.com/smtp/emails');
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, [
+		'Content-Type: application/json',
+		'Authorization: Bearer ' . $MinhaSenha
+	]);
+
+	$response = curl_exec($ch);
+	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	curl_close($ch);
+
+	if ($httpCode == 200) {
 		echo 'Email enviado com sucesso';
 	} else {
-		echo 'Email nao enviado';
+		echo "Erro ao enviar mensagem via SendPulse API. Código: $httpCode Resposta: $response";
 	}
-} catch (Exception $e) {
-	echo "Erro ao enviar mensagem: {$mail->ErrorInfo}";
+} else {
+	try {
+		//$mail->SMTPDebug = SMTP::DEBUG_SERVER;
+		$mail->isSMTP();
+		
+		// Verifica se é Gmail
+		if (strpos(strtolower($MeuEmail), '@gmail.com') !== false) {
+			$mail->Host = 'smtp.gmail.com';
+			$mail->Username = $MeuEmail;
+			$mail->Password = $MinhaSenha;
+			$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+			$mail->Port = 465;
+			$mail->setFrom($MeuEmail, "$loja");
+		} else {
+			// Default para Resend (Railway permite porta 2525)
+			$mail->Host = 'smtp.resend.com';
+			$mail->Username = 'resend'; // Username no Resend é sempre 'resend'
+			$mail->Password = $MinhaSenha; // Senha vinda do banco de dados
+			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+			$mail->Port = 2525;
+			$mail->setFrom('onboarding@resend.dev', "$loja"); // O Resend exige o email verificado ou onboarding no modo teste
+		}
+		
+		$mail->SMTPAuth = true;
+		$mail->addAddress("$emailCliente"); //email do cliente
+	 
+		$mail->isHTML(true);
+		$mail->Subject = utf8_decode("$texto1email id:$idCliente");
+		$mail->Body = utf8_decode("$texto");
+		//$mail->AltBody = 'Chegou o email teste do Canal TI';
+	 
+		if($mail->send()) {
+			echo 'Email enviado com sucesso';
+		} else {
+			echo 'Email nao enviado';
+		}
+	} catch (Exception $e) {
+		echo "Erro ao enviar mensagem: {$mail->ErrorInfo}";
+	}
 }
 ##
 
