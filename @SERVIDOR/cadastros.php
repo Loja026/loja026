@@ -251,6 +251,23 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 	    }, 1500);
 	  });
 	}
+
+    function enviarReciboHTML(id) {
+      if(!confirm("Deseja enviar o Recibo/Página de Obrigado HTML para o e-mail deste cliente via servidor?")) return;
+      $.post("api_adm/", {painel:"enviar_recibo_html", id: id}, function(res) {
+          try {
+              var r = JSON.parse(res);
+              if(r.ok) {
+                  alert("E-mail enviado com sucesso!");
+              } else {
+                  alert("Erro ao enviar: " + r.error);
+              }
+          } catch(e) {
+              alert("Erro ao processar resposta do servidor.");
+              console.log(res);
+          }
+      });
+    }
 	</script>
   
   <script src="./assets/js/material-dashboard.min.js?v=3.0.4"></script>
