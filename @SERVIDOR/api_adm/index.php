@@ -1835,12 +1835,24 @@ break;
         $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
         try {
             $mail->isSMTP();
-            $mail->Host = 'smtp.resend.com';
+            
+            // Verifica se é Gmail
+            if (strpos(strtolower($smtp_user), '@gmail.com') !== false) {
+                $mail->Host = 'smtp.gmail.com';
+                $mail->Username = $smtp_user;
+                $mail->Password = $smtp_pass;
+                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+                $mail->Port = 465;
+            } else {
+                // Default para Resend
+                $mail->Host = 'smtp.resend.com';
+                $mail->Username = 'resend';
+                $mail->Password = $smtp_pass;
+                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+                $mail->Port = 465;
+            }
+            
             $mail->SMTPAuth = true;
-            $mail->Username = 'resend';
-            $mail->Password = $smtp_pass;
-            $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
-            $mail->Port = 465;
             $mail->CharSet = 'UTF-8';
             
             $mail->setFrom($smtp_user, 'Nossa Loja');

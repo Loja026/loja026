@@ -47,15 +47,26 @@ try {
     $mail->Timeout = 10; // Adiciona timeout de 10 segundos
 
     $mail->isSMTP();
-    $mail->Host = 'smtp.resend.com';
+    
+    // Verifica se é Gmail
+    if (strpos(strtolower($MeuEmail), '@gmail.com') !== false) {
+        $mail->Host = 'smtp.gmail.com';
+        $mail->Username = $MeuEmail;
+        $mail->Password = $MinhaSenha;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = 465;
+        echo "<h3>Testando conexão com smtp.gmail.com...</h3>";
+    } else {
+        // Default para Resend
+        $mail->Host = 'smtp.resend.com';
+        $mail->Username = 'resend';
+        $mail->Password = $MinhaSenha;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = 465;
+        echo "<h3>Testando conexão com smtp.resend.com...</h3>";
+    }
+    
     $mail->SMTPAuth = true;
-    $mail->Username = 'resend';
-    $mail->Password = $MinhaSenha; // Pegando a senha (API key) do painel/banco
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Tenta TLS
-    $mail->Port = 465; // Tenta porta 465
-
-    // Apenas testando a conexão com o servidor SMTP
-    echo "<h3>Testando conexão com smtp.resend.com...</h3>";
     
     if ($mail->smtpConnect()) {
         echo "<br><b style='color:green;'>Conexão SMTP estabelecida e autenticada com sucesso!</b><br>";
