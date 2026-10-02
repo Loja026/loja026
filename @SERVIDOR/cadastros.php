@@ -50,6 +50,13 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
       color: var(--text-muted);
       margin-top: 4px;
     }
+    /* Estilo para ajustar a tabela em qualquer tela */
+    .table td, .table th {
+      white-space: normal !important;
+      word-wrap: break-word !important;
+      vertical-align: middle !important;
+      max-width: 250px;
+    }
   </style>
 
     <link rel="shortcut icon" href="../arquivos/favicon.png?v=<?php echo time(); ?>">
