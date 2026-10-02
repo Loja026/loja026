@@ -57,13 +57,13 @@ try {
         $mail->Port = 465;
         echo "<h3>Testando conexão com smtp.gmail.com (Porta 465)...</h3>";
     } else {
-        // Default para Resend
+        // Default para Resend (Railway permite porta 2525)
         $mail->Host = 'smtp.resend.com';
         $mail->Username = 'resend';
         $mail->Password = $MinhaSenha;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port = 465;
-        echo "<h3>Testando conexão com smtp.resend.com...</h3>";
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 2525;
+        echo "<h3>Testando conexão com smtp.resend.com (Porta 2525)...</h3>";
     }
     
     $mail->SMTPAuth = true;

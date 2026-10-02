@@ -74,12 +74,12 @@ try {
 		$mail->Port = 465;
 		$mail->setFrom($MeuEmail, "$loja");
 	} else {
-		// Default para Resend
+		// Default para Resend (Railway permite porta 2525)
 		$mail->Host = 'smtp.resend.com';
 		$mail->Username = 'resend'; // Username no Resend é sempre 'resend'
 		$mail->Password = $MinhaSenha; // Senha vinda do banco de dados
-		$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-		$mail->Port = 465;
+		$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+		$mail->Port = 2525;
 		$mail->setFrom('onboarding@resend.dev', "$loja"); // O Resend exige o email verificado ou onboarding no modo teste
 	}
 	
