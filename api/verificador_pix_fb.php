@@ -9,7 +9,7 @@ if (!$conn) {
 }
 
 // 1. Busca todos os PIXs que estão aguardando pagamento
-$sql = "SELECT id, codigo FROM pix_tabela_codigos WHERE status_pagamento IN ('RESERVADO', 'DISPONIVEL') AND criado_em >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)";
+$sql = "SELECT id, codigo FROM pix_tabela_codigos WHERE status_pagamento IN ('RESERVADO', 'DISPONIVEL') AND reservado_em >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)";
 
 // Se foi passado um ID específico via AJAX, otimiza para buscar só ele
 if (isset($_GET['id'])) {
