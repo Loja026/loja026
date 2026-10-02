@@ -64,14 +64,26 @@ $texto = $x;
 try {
 	//$mail->SMTPDebug = SMTP::DEBUG_SERVER;
 	$mail->isSMTP();
-	$mail->Host = 'smtp.resend.com';
+	
+	// Verifica se é Gmail
+	if (strpos(strtolower($MeuEmail), '@gmail.com') !== false) {
+		$mail->Host = 'smtp.gmail.com';
+		$mail->Username = $MeuEmail;
+		$mail->Password = $MinhaSenha;
+		$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+		$mail->Port = 465;
+		$mail->setFrom($MeuEmail, "$loja");
+	} else {
+		// Default para Resend
+		$mail->Host = 'smtp.resend.com';
+		$mail->Username = 'resend'; // Username no Resend é sempre 'resend'
+		$mail->Password = $MinhaSenha; // Senha vinda do banco de dados
+		$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+		$mail->Port = 465;
+		$mail->setFrom('onboarding@resend.dev', "$loja"); // O Resend exige o email verificado ou onboarding no modo teste
+	}
+	
 	$mail->SMTPAuth = true;
-	$mail->Username = 'resend'; // Username no Resend é sempre 'resend'
-	$mail->Password = $MinhaSenha; // Senha vinda do banco de dados
-	$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-	$mail->Port = 465;
- 
-	$mail->setFrom('onboarding@resend.dev', "$loja"); // O Resend exige o email verificado ou onboarding no modo teste
 	$mail->addAddress("$emailCliente"); //email do cliente
  
 	$mail->isHTML(true);

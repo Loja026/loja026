@@ -53,9 +53,9 @@ try {
         $mail->Host = 'smtp.gmail.com';
         $mail->Username = $MeuEmail;
         $mail->Password = $MinhaSenha;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-        echo "<h3>Testando conexão com smtp.gmail.com (Porta 587)...</h3>";
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = 465;
+        echo "<h3>Testando conexão com smtp.gmail.com (Porta 465)...</h3>";
     } else {
         // Default para Resend
         $mail->Host = 'smtp.resend.com';
