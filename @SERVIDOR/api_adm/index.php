@@ -544,18 +544,32 @@ switch($acao){
 					}
 				}
 				
-				// Se ainda não achou, busca na tabela pixgerado por telefone ou ip
-				if (empty($cod_p) || empty($produto) || $produto === 'Interesse na Loja') {
-					$tel_limpo = preg_replace('/\D/', '', $celular);
-					$ip_raw = base64_decode($rowx["ip"] ?? '');
-					$sql_prod = mysqli_query($conn, "SELECT produto, produto_nome FROM pixgerado WHERE (cliente_telefone LIKE '%$tel_limpo%' AND cliente_telefone != '') OR ip='$ip_raw' ORDER BY id DESC LIMIT 1");
-					if ($sql_prod && $row_p = mysqli_fetch_assoc($sql_prod)) {
-						if (empty($produto) || $produto === 'Interesse na Loja') {
-							$produto = htmlspecialchars($row_p['produto_nome'] ?: $row_p['produto']);
-						}
-						if (empty($cod_p)) {
-							$cod_p = $row_p['produto'] ?? '';
-						}
+				$status_pagamento_badge = '';
+				
+				// Busca na tabela pixgerado por telefone ou ip para status e produto
+				$tel_limpo = preg_replace('/\D/', '', $celular);
+				$ip_raw = base64_decode($rowx["ip"] ?? '');
+				$sql_prod = mysqli_query($conn, "SELECT produto, produto_nome, status, pixgo_status, mp_status, freepay_status, carthero_status FROM pixgerado WHERE (cliente_telefone LIKE '%$tel_limpo%' AND cliente_telefone != '') OR ip='$ip_raw' ORDER BY id DESC LIMIT 1");
+				if ($sql_prod && $row_p = mysqli_fetch_assoc($sql_prod)) {
+					if (empty($produto) || $produto === 'Interesse na Loja') {
+						$produto = htmlspecialchars($row_p['produto_nome'] ?: $row_p['produto']);
+					}
+					if (empty($cod_p)) {
+						$cod_p = $row_p['produto'] ?? '';
+					}
+					
+					// Verifica status de pagamento
+					$pago_arrays = ['pago', 'paid', 'approved', 'approved_payment', 'completed', 'success'];
+					$status_main = strtolower($row_p['status'] ?? '');
+					$status_pg = strtolower($row_p['pixgo_status'] ?? '');
+					$status_mp = strtolower($row_p['mp_status'] ?? '');
+					$status_fp = strtolower($row_p['freepay_status'] ?? '');
+					$status_ch = strtolower($row_p['carthero_status'] ?? '');
+					
+					if (in_array($status_main, $pago_arrays) || in_array($status_pg, $pago_arrays) || in_array($status_mp, $pago_arrays) || in_array($status_fp, $pago_arrays) || in_array($status_ch, $pago_arrays)) {
+						$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-success mt-1" title="Pago" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:4px;"><i class="material-icons" style="font-size:12px;">check_circle</i> Pago</span>';
+					} else {
+						$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-warning mt-1" title="Reservado / Aguardando" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:4px;"><i class="material-icons" style="font-size:12px;">schedule</i> Reservado</span>';
 					}
 				}
 				
@@ -653,9 +667,12 @@ switch($acao){
 					  </td>
 					 
 					  <td class="align-middle text-center">
-						<div class="d-flex align-items-center justify-content-center gap-1">
-							<span id="'.$id.'" onclick="excluir(this.id);" style="cursor:pointer;" class="badge badge-sm bg-gradient-secondary" title="Excluir"><i class="fa fa-trash"></i></span>
-							<span id="'.$ip.'" onclick="sendBlock(this.id)" style="cursor:pointer;" class="badge badge-sm bg-gradient-danger" title="Bloquear"><i class="fa fa-ban"></i></span>
+						<div class="d-flex flex-column align-items-center justify-content-center gap-1">
+							<div class="d-flex align-items-center justify-content-center gap-2">
+								<span id="'.$id.'" onclick="excluir(this.id);" style="cursor:pointer; padding:6px 12px; display:inline-flex; align-items:center;" class="badge badge-sm bg-gradient-secondary" title="Excluir"><i class="material-icons" style="font-size:16px;">delete</i></span>
+								<span id="'.$ip.'" onclick="sendBlock(this.id)" style="cursor:pointer; padding:6px 12px; display:inline-flex; align-items:center;" class="badge badge-sm bg-gradient-danger" title="Bloquear"><i class="material-icons" style="font-size:16px;">block</i></span>
+							</div>
+							'.$status_pagamento_badge.'
 						</div>
 					  </td>
 					</tr>';
