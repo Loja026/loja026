@@ -38,8 +38,10 @@ if (function_exists('mysqli_report')) {
     @mysqli_report(MYSQLI_REPORT_OFF);
 }
 
-// Tentar conectar
-$conn = @mysqli_connect($host, $user, $password, $database, $port);
+// Tentar conectar com timeout reduzido
+$conn = mysqli_init();
+mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+@mysqli_real_connect($conn, $host, $user, $password, $database, $port);
 
 // Verificar se a conexão falhou
 if (!$conn) { 
