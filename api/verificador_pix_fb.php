@@ -46,7 +46,8 @@ foreach ($pedidos as $pedido) {
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36');
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Reduzido para 3s para evitar 502 Gateway Timeout
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
