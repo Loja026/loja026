@@ -256,15 +256,16 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
       if(!confirm("Deseja enviar o Recibo/Página de Obrigado HTML para o e-mail deste cliente via servidor?")) return;
       $.post("api_adm/", {painel:"enviar_recibo_html", id: id}, function(res) {
           try {
-              var r = JSON.parse(res);
+              var r = typeof res === 'string' ? JSON.parse(res) : res;
               if(r.ok) {
                   alert("E-mail enviado com sucesso!");
               } else {
                   alert("Erro ao enviar: " + r.error);
               }
           } catch(e) {
-              alert("Erro ao processar resposta do servidor.");
-              console.log(res);
+              alert("Erro ao processar resposta do servidor. Verifique o console.");
+              console.log("Response:", res);
+              console.log("Error:", e);
           }
       });
     }

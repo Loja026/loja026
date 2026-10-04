@@ -52,9 +52,8 @@ while($sql && $row = mysqli_fetch_array($sql)){
 			exit;
 		}
 		
-		$recorte = explode("|", $emailPHPMAILER);
-		$MeuEmail = $recorte[0];
-		$MinhaSenha = $recorte[1];
+		$MeuEmail = trim($emailPHPMAILER ?? '');
+		$MinhaSenha = trim($htmlEmail ?? '');
 		
 		$sql = mysqli_query($conn, "SELECT * from config");
 		while($sql && $row = mysqli_fetch_array($sql)){   	   

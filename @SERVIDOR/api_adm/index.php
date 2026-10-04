@@ -1824,8 +1824,8 @@ break;
             break;
         }
         
-        $smtp_user = trim($row_api["email"]);
-        $smtp_pass = trim($row_api["htmlemail"]);
+        $smtp_user = trim($row_api["email"] ?? '');
+        $smtp_pass = trim($row_api["htmlemail"] ?? '');
         
         if (empty($smtp_user) || empty($smtp_pass)) {
             echo json_encode(['ok' => false, 'error' => 'Credenciais SMTP inválidas no painel']);
