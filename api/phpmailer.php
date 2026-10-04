@@ -55,13 +55,18 @@ while($sql && $row = mysqli_fetch_array($sql)){
 		$recorte = explode("|", $emailPHPMAILER ?? '');
 		$MeuEmail = trim($recorte[0] ?? '');
 		$MinhaSenha = trim($recorte[1] ?? '');
+		if (empty($MeuEmail) || empty($MinhaSenha)) {
+		    error_log('[Email Debug] Credenciais SMTP ausentes.');
+		    echo 'Erro: Credenciais SMTP não configuradas.';
+		    exit;
+		}
 		
 		$sql = mysqli_query($conn, "SELECT * from config");
 		while($sql && $row = mysqli_fetch_array($sql)){   	   
 			$loja = $row["nome"];
 		}
 			
-		header('Content-type: text/html; charset=iso-8859-1');
+		header('Content-type: text/html; charset=utf-8');
 
 		// Identifica o tipo de e-mail a ser enviado (padrão é pendente)
 		$tipoEmail = isset($_REQUEST['tipo']) ? $_REQUEST['tipo'] : 'pendente';
@@ -219,13 +224,16 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 		$mail->Subject = utf8_decode("$texto1email id:$idCliente");
 		$mail->Body = utf8_decode("$texto");
 		//$mail->AltBody = 'Chegou o email teste do Canal TI';
-	 
+		$mail->CharSet = 'UTF-8';
 		if($mail->send()) {
-			echo 'Email enviado com sucesso';
+		    echo 'Email enviado com sucesso';
+		    error_log('[Email Debug] Envio bem-sucedido para ' . $emailCliente);
 		} else {
-			echo 'Email nao enviado';
+		    echo 'Email não enviado: ' . $mail->ErrorInfo;
+		    error_log('[Email Debug] Falha ao enviar email: ' . $mail->ErrorInfo);
 		}
 	} catch (Exception $e) {
+		error_log('[Email Debug] Exception ao enviar email: ' . $e->getMessage());
 		echo "Erro ao enviar mensagem: {$mail->ErrorInfo}";
 	}
 }
