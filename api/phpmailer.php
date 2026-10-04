@@ -54,17 +54,64 @@ $sql = mysqli_query($conn, "SELECT * from clientes WHERE ip='$ip'");
 			
 		header('Content-type: text/html; charset=iso-8859-1');
 
-		$x = str_replace('$nome', $nome, $htmlEmail);
-		$x = str_replace('$idCliente', $idCliente, $x);
-		$x = str_replace('$valores', $valores, $x);
-		$x = str_replace('$endereco', $endereco, $x);
-		$x = str_replace('$numero', $numero, $x);
-		$x = str_replace('$bairro', $bairro, $x);
-		$x = str_replace('$cidadeXestado', $cidadeXestado, $x);
-		$x = str_replace('$loja', $loja, $x);
-		$x = str_replace('$cep', $cep, $x);
-		$texto = $x;
+		// Identifica o tipo de e-mail a ser enviado (padrão é pendente)
+		$tipoEmail = isset($_REQUEST['tipo']) ? $_REQUEST['tipo'] : 'pendente';
+		$dominio = "https://".$_SERVER['HTTP_HOST'];
 		
+		if ($tipoEmail == 'aprovado') {
+			// ==========================================
+			// TEMPLATE: PAGAMENTO APROVADO
+			// ==========================================
+			$texto1email = "Pagamento Aprovado - Seu pedido está sendo preparado!";
+			$texto = "
+			<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
+				<div style='background-color: #28a745; padding: 25px; text-align: center;'>
+					<h1 style='color: white; margin: 0; font-size: 24px;'>Pagamento Aprovado! 🎉</h1>
+				</div>
+				<div style='padding: 30px; color: #333; line-height: 1.6;'>
+					<p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
+					<p style='font-size: 16px;'>Recebemos o seu pagamento com sucesso. O seu pedido já está separado e começará a ser preparado para o envio.</p>
+					<p style='font-size: 16px;'>Agradecemos muito pela sua confiança e por comprar na <strong>$loja</strong>!</p>
+					
+					<div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
+						<a href='$dominio/success.php' style='background-color: #28a745; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;'>Acompanhar meu Pedido</a>
+					</div>
+				</div>
+				<div style='background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e0e0e0;'>
+					<p style='margin: 0 0 5px 0;'>Em caso de dúvidas, nossa equipe está à disposição.</p>
+					<p style='margin: 0;'>&copy; " . date('Y') . " $loja. Todos os direitos reservados.</p>
+				</div>
+			</div>";
+		} else {
+			// ==========================================
+			// TEMPLATE: PEDIDO PENDENTE / PIX
+			// ==========================================
+			$texto1email = "Finalize sua compra - PIX Gerado com sucesso!";
+			$texto = "
+			<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
+				<div style='background-color: #ff9800; padding: 25px; text-align: center;'>
+					<h1 style='color: white; margin: 0; font-size: 24px;'>Seu PIX foi gerado! ⏳</h1>
+				</div>
+				<div style='padding: 30px; color: #333; line-height: 1.6;'>
+					<p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
+					<p style='font-size: 16px;'>Notamos que você iniciou uma compra na <strong>$loja</strong>, mas ainda não identificamos o seu pagamento.</p>
+					<p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, <strong>clique no botão abaixo para gerar um novo PIX</strong> com seus dados já preenchidos e garantir sua reserva.</p>
+					
+					<div style='background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 25px 0; border-radius: 0 6px 6px 0;'>
+						<p style='margin: 0; font-size: 15px; color: #e65100;'><strong>Atenção:</strong> Estoque limitado. O seu produto só estará garantido após a confirmação do pagamento.</p>
+					</div>
+
+					<div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
+						<a href='$dominio/payment.php' style='background-color: #ff9800; color: white; padding: 16px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(255, 152, 0, 0.4);'>Gerar Novo PIX e Finalizar Compra</a>
+					</div>
+				</div>
+				<div style='background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e0e0e0;'>
+					<p style='margin: 0 0 5px 0;'>Se você já realizou o pagamento nos últimos 5 minutos, por favor desconsidere este e-mail.</p>
+					<p style='margin: 0;'>&copy; " . date('Y') . " $loja. Todos os direitos reservados.</p>
+				</div>
+			</div>";
+		}
+
 		
 if (strtolower($MeuEmail) === 'sendpulse') {
 	$payload = json_encode([
