@@ -176,18 +176,16 @@ if ($idx === false) $idx = 1;
 $date_upd = !empty($cliente['data_status_rastreio']) ? strtotime($cliente['data_status_rastreio']) : $created_at;
 
 $events = [];
-for ($i = count($seq_keys) - 1; $i >= 0; $i--) {
+for ($i = $idx; $i >= 0; $i--) {
     $k = $seq_keys[$i];
     if (isset($status_map[$k])) {
-        $completed = ($i <= $idx);
         $time_offset = $date_upd - (($idx - $i) * 3600 * 6);
         $events[] = [
             'key' => $k,
             'title' => $status_map[$k]['title'],
             'desc' => $status_map[$k]['desc'],
-            'completed' => $completed,
             'is_current' => ($i === $idx),
-            'time' => $completed ? date('d/m/Y H:i', $time_offset) : ''
+            'time' => date('d/m/Y H:i', $time_offset)
         ];
     }
 }
@@ -231,8 +229,8 @@ if (empty($img_src) && !empty($produto['codigo'])) {
 <div class="status-head"><div class="status-icon"><i class="fa-solid <?php echo ($status_key === 'entregue') ? 'fa-circle-check' : (($status_key === 'ausente') ? 'fa-triangle-exclamation' : 'fa-truck'); ?>"></i></div><div><h1 class="status-title"><?php echo htmlspecialchars($status_title); ?></h1><p class="status-label">Status: <?php echo htmlspecialchars($status_label); ?></p><p class="guarantee"><i class="fa-solid fa-shield-halved" style="color:#00a650"></i> Compra Garantida</p></div></div>
 <div class="progress-area"><div class="bar"><span></span></div><div class="steps"><span style="color:<?php echo $step0_color; ?>">Pedido realizado</span><span style="color:<?php echo $step1_color; ?>">Pagamento</span><span style="color:<?php echo $step2_color; ?>">Enviado</span><span style="color:<?php echo $step3_color; ?>">Entregue</span></div></div>
 <div class="history"><h2><i class="fa-solid fa-clock-rotate-left" style="color:#3483fa"></i> Histórico de movimentação</h2>
-<?php foreach ($events as $ev): ?>
-<div class="event <?php echo $ev['completed'] ? 'completed' : 'pending'; ?>"><span class="dot"></span><h3><?php echo htmlspecialchars($ev['title']); ?></h3><p><?php echo htmlspecialchars($ev['desc']); ?></p><?php if ($ev['completed'] && !empty($ev['time'])): ?><time><?php echo htmlspecialchars($ev['time']); ?></time><?php endif; ?></div>
+<?php foreach ($events as $idx_ev => $ev): ?>
+<div class="event <?php echo ($idx_ev === 0) ? 'completed' : ''; ?>"><span class="dot"></span><h3><?php echo htmlspecialchars($ev['title']); ?></h3><p><?php echo htmlspecialchars($ev['desc']); ?></p><?php if (!empty($ev['time'])): ?><time><?php echo htmlspecialchars($ev['time']); ?></time><?php endif; ?></div>
 <?php endforeach; ?>
 </div></section>
 
