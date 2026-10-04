@@ -526,8 +526,15 @@ if (isset($_GET["cid"])) {
 
             // Preços
             const cartData = JSON.parse(localStorage.getItem('lojavirtual') || '{}');
-            if(cartData.precoFinal) {
-                let precoStr = cartData.precoFinal.replace('.', '').replace(',', '.');
+            let pFinalRaw = cartData.precoFinal;
+            if (!pFinalRaw) {
+                pFinalRaw = "<?php echo isset($valor) ? number_format((float)str_replace(',', '.', str_replace('.', '', $valor)), 2, ',', '.') : '0,00'; ?>";
+                cartData.precoFinal = pFinalRaw;
+                cartData.quantos = '1';
+                localStorage.setItem('lojavirtual', JSON.stringify(cartData));
+            }
+            if(pFinalRaw) {
+                let precoStr = pFinalRaw.replace('.', '').replace(',', '.');
                 let totalFinal = parseFloat(precoStr) || 0;
                 
                 let precoOrigStr = cartData.precoOriginal ? cartData.precoOriginal.replace('.', '').replace(',', '.') : precoStr;

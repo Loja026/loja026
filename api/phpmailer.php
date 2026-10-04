@@ -1,4 +1,4 @@
-﻿<?php 
+<?php 
 
 session_start();
 
@@ -72,11 +72,28 @@ while($sql && $row = mysqli_fetch_array($sql)){
 		$tipoEmail = isset($_REQUEST['tipo']) ? $_REQUEST['tipo'] : 'pendente';
 		$dominio = "https://".$_SERVER['HTTP_HOST'];
 		
+		// Identifica o codigo do produto para os links
+		$codigoProduto = !empty($_REQUEST['override_produto']) ? $_REQUEST['override_produto'] : '';
+		if (empty($codigoProduto) && !empty($idCliente)) {
+			$sql_pcode = mysqli_query($conn, "SELECT produto_codigo FROM clientes WHERE id='$idCliente' LIMIT 1");
+			if ($sql_pcode && $row_pcode = mysqli_fetch_assoc($sql_pcode)) {
+				$codigoProduto = $row_pcode['produto_codigo'] ?? '';
+			}
+		}
+		if (empty($codigoProduto)) {
+			$sql_p_first = mysqli_query($conn, "SELECT codigo FROM produto ORDER BY id DESC LIMIT 1");
+			if ($sql_p_first && $row_p_first = mysqli_fetch_assoc($sql_p_first)) {
+				$codigoProduto = $row_p_first['codigo'] ?? '';
+			}
+		}
+
 		if ($tipoEmail == 'aprovado') {
 			// ==========================================
 			// TEMPLATE: PAGAMENTO APROVADO
 			// ==========================================
 			$texto1email = "Pagamento Aprovado - Seu pedido está sendo preparado!";
+			$tracking_link = "$dominio/rastreio.php?produto=$codigoProduto&confirmado=1&cid=$idCliente";
+
 			$texto = "
 			<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
 				<div style='background-color: #28a745; padding: 25px; text-align: center;'>
@@ -88,7 +105,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 					<p style='font-size: 16px;'>Agradecemos muito pela sua confiança e por comprar na <strong>$loja</strong>!</p>
 					
 					<div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
-						<a href='$dominio/success.php' style='background-color: #28a745; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;'>Acompanhar meu Pedido</a>
+						<a href='$tracking_link' style='background-color: #28a745; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;'>Acompanhar meu Pedido</a>
 					</div>
 				</div>
 				<div style='background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e0e0e0;'>
@@ -101,12 +118,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 			// TEMPLATE: PEDIDO PENDENTE / PIX
 			// ==========================================
 			$texto1email = "Seu pedido foi reservado";
-			$payment_link = "$dominio/payment.php?cid=$idCliente";
-			
-			$override_produto = $_REQUEST['override_produto'] ?? '';
-			if (!empty($override_produto)) {
-				$payment_link = "$dominio/payment.php?produto=$override_produto&cid=$idCliente";
-			}
+			$payment_link = "$dominio/payment.php?produto=$codigoProduto&cid=$idCliente";
 
 			// Buscar nome do produto do cliente
 			$nomeProduto = 'seu produto';

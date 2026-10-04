@@ -2,11 +2,29 @@
 session_start();
 require_once __DIR__ . '/api/db.php';
 
-$produto_codigo = trim((string)($_GET['produto'] ?? ''));
+$produto_codigo = trim((string)($_GET['produto'] ?? $_GET['id'] ?? ''));
+$cid = trim((string)($_GET['cid'] ?? ''));
+
+if ($produto_codigo === '' && $cid !== '') {
+    $cid_safe = mysqli_real_escape_string($conn, $cid);
+    $c_res = mysqli_query($conn, "SELECT produto_codigo FROM clientes WHERE id='$cid_safe' LIMIT 1");
+    if ($c_res && $c_row = mysqli_fetch_assoc($c_res)) {
+        $produto_codigo = trim((string)($c_row['produto_codigo'] ?? ''));
+    }
+}
+
+if ($produto_codigo === '') {
+    $p_res = mysqli_query($conn, "SELECT codigo FROM produto ORDER BY id DESC LIMIT 1");
+    if ($p_res && $p_row = mysqli_fetch_assoc($p_res)) {
+        $produto_codigo = trim((string)$p_row['codigo']);
+    }
+}
+
 if ($produto_codigo === '') {
     header('Location: ./index');
     exit;
 }
+
 $produto_safe = mysqli_real_escape_string($conn, $produto_codigo);
 $produto_result = mysqli_query($conn, "SELECT * FROM produto WHERE codigo='$produto_safe' LIMIT 1");
 $produto = $produto_result ? mysqli_fetch_assoc($produto_result) : null;
@@ -15,12 +33,30 @@ if (!$produto) {
     exit;
 }
 
-$ip = mysqli_real_escape_string($conn, $_SERVER['REMOTE_ADDR'] ?? '');
-$pix_result = mysqli_query($conn, "SELECT * FROM pixgerado WHERE ip='$ip' AND produto='$produto_safe' ORDER BY id DESC LIMIT 1");
-$pix = $pix_result ? mysqli_fetch_assoc($pix_result) : null;
-$cliente_ip = mysqli_real_escape_string($conn, base64_encode($_SERVER['REMOTE_ADDR'] ?? ''));
-$cliente_result = mysqli_query($conn, "SELECT * FROM clientes WHERE ip='$cliente_ip' ORDER BY id DESC LIMIT 1");
-$cliente = $cliente_result ? mysqli_fetch_assoc($cliente_result) : [];
+$cliente = [];
+if ($cid !== '') {
+    $cid_safe = mysqli_real_escape_string($conn, $cid);
+    $cliente_result = mysqli_query($conn, "SELECT * FROM clientes WHERE id='$cid_safe' LIMIT 1");
+    $cliente = ($cliente_result && mysqli_num_rows($cliente_result) > 0) ? mysqli_fetch_assoc($cliente_result) : [];
+}
+if (empty($cliente)) {
+    $cliente_ip = mysqli_real_escape_string($conn, base64_encode($_SERVER['REMOTE_ADDR'] ?? ''));
+    $cliente_result = mysqli_query($conn, "SELECT * FROM clientes WHERE ip='$cliente_ip' ORDER BY id DESC LIMIT 1");
+    $cliente = ($cliente_result && mysqli_num_rows($cliente_result) > 0) ? mysqli_fetch_assoc($cliente_result) : [];
+}
+
+$pix = null;
+if (!empty($cliente['ip'])) {
+    $raw_ip = base64_decode($cliente['ip']);
+    $ip_safe = mysqli_real_escape_string($conn, $raw_ip);
+    $pix_result = mysqli_query($conn, "SELECT * FROM pixgerado WHERE ip='$ip_safe' AND produto='$produto_safe' ORDER BY id DESC LIMIT 1");
+    $pix = $pix_result ? mysqli_fetch_assoc($pix_result) : null;
+}
+if (!$pix) {
+    $ip = mysqli_real_escape_string($conn, $_SERVER['REMOTE_ADDR'] ?? '');
+    $pix_result = mysqli_query($conn, "SELECT * FROM pixgerado WHERE ip='$ip' AND produto='$produto_safe' ORDER BY id DESC LIMIT 1");
+    $pix = $pix_result ? mysqli_fetch_assoc($pix_result) : null;
+}
 
 $config_result = mysqli_query($conn, "SELECT * FROM config LIMIT 1");
 $config = $config_result ? mysqli_fetch_assoc($config_result) : [];
@@ -57,6 +93,22 @@ $destino = trim((string)($cliente['cidade'] ?? ''));
 if (!empty($cliente['estado'])) $destino .= ($destino ? ', ' : '') . $cliente['estado'];
 if ($destino === '') $destino = 'Seu endereço de entrega';
 $etapas = $is_paid ? 1 : 0;
+
+$img_src = '';
+$img_file = trim((string)($produto['img'] ?? ''));
+if (!empty($img_file)) {
+    if (strpos($img_file, 'http') === 0) {
+        $img_src = $img_file;
+    } else {
+        $img_src = "./arquivos/produtos/{$produto['codigo']}/$img_file";
+    }
+}
+if (empty($img_src) && !empty($produto['codigo'])) {
+    $glob_imgs = glob(__DIR__ . "/arquivos/produtos/{$produto['codigo']}/*.{png,jpg,jpeg,webp,gif}", GLOB_BRACE);
+    if (!empty($glob_imgs)) {
+        $img_src = "./arquivos/produtos/{$produto['codigo']}/" . basename($glob_imgs[0]);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -79,7 +131,7 @@ $etapas = $is_paid ? 1 : 0;
 <div class="event"><span class="dot"></span><h3><?php echo $is_paid ? 'Preparando envio' : 'Pedido solicitado'; ?></h3><p><?php echo $is_paid ? 'O vendedor está preparando o seu pacote.' : 'O pedido foi registrado em nosso sistema.'; ?></p><time><?php echo date('d/m/Y', $created_at); ?></time></div>
 <?php if ($is_paid): ?><div class="event"><span class="dot"></span><h3>Pedido solicitado</h3><p>O pedido foi registrado em nosso sistema.</p><time><?php echo date('d/m/Y', $created_at); ?></time></div><?php endif; ?>
 </div></section>
-<aside class="card side"><h2>Produtos</h2><div class="product"><div class="product-icon"><i class="fa-solid fa-box"></i></div><div><div class="product-name"><?php echo htmlspecialchars($nome_produto); ?></div><div class="product-meta">1 unidade</div></div></div><div class="total"><span style="font-size:13px;font-weight:bold;color:#777;text-transform:uppercase">Total</span><strong>R$ <?php echo $valor_formatado; ?></strong></div><div class="delivery"><b>Informações de entrega</b><span><?php echo htmlspecialchars($destino); ?></span><br><span>Previsão: <?php echo htmlspecialchars($delivery_date); ?></span></div></aside>
+<aside class="card side"><h2>Produtos</h2><div class="product"><?php if (!empty($img_src)): ?><img src="<?php echo htmlspecialchars($img_src); ?>" alt="<?php echo htmlspecialchars($nome_produto); ?>" style="width:56px;height:56px;object-fit:contain;border-radius:7px;border:1px solid #eee;background:#fff;padding:2px;"><?php else: ?><div class="product-icon"><i class="fa-solid fa-box"></i></div><?php endif; ?><div><div class="product-name"><?php echo htmlspecialchars($nome_produto); ?></div><div class="product-meta">1 unidade</div></div></div><div class="total"><span style="font-size:13px;font-weight:bold;color:#777;text-transform:uppercase">Total</span><strong>R$ <?php echo $valor_formatado; ?></strong></div><div class="delivery"><b>Informações de entrega</b><span><?php echo htmlspecialchars($destino); ?></span><br><span>Previsão: <?php echo htmlspecialchars($delivery_date); ?></span></div></aside>
 </main>
 <footer class="footer"><a href="politica-de-privacidade">Política de Privacidade</a><a href="termos-de-uso">Termos de Uso</a><a href="trocas-e-devolucoes">Trocas e Devoluções</a><p>Copyright © <?php echo date('Y'); ?> <?php echo htmlspecialchars($nome_loja); ?>. Todos os direitos reservados.</p></footer>
 </body></html>
