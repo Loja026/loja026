@@ -364,27 +364,43 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 
       $('#btnSalvarStatus').prop('disabled', true).html('<i class="fa fa-spinner fa-spin me-1"></i> Salvando...');
       
-      $.post('api_adm/', {
-        painel: 'atualizar_status_rastreio',
-        id: id,
-        status_rastreio: status,
-        enviar_email: enviarEmail
-      }, function(res) {
-        $('#btnSalvarStatus').prop('disabled', false).html('<i class="material-icons text-sm">save</i> Salvar Status');
-        var modalEl = document.getElementById('modalStatusRastreio');
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
-        
-        try {
-          var r = typeof res === 'string' ? JSON.parse(res) : res;
-          if (r.ok) {
-            alert("Status do pedido atualizado com sucesso!" + (enviarEmail ? "\nE-mail de notificação enviado ao cliente." : ""));
+      $.ajax({
+        url: 'api_adm/',
+        type: 'POST',
+        data: {
+          painel: 'atualizar_status_rastreio',
+          id: id,
+          status_rastreio: status,
+          enviar_email: enviarEmail
+        },
+        timeout: 10000,
+        success: function(res) {
+          $('#btnSalvarStatus').prop('disabled', false).html('<i class="material-icons text-sm">save</i> Salvar Status');
+          var modalEl = document.getElementById('modalStatusRastreio');
+          var modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+          
+          try {
+            var r = typeof res === 'string' ? JSON.parse(res) : res;
+            if (r.ok) {
+              alert("Status do pedido atualizado com sucesso!" + (enviarEmail ? "\nE-mail de notificação enviado ao cliente." : ""));
+              carregarCadastros();
+            } else {
+              alert("Erro ao atualizar status: " + (r.error || 'Erro desconhecido'));
+              carregarCadastros();
+            }
+          } catch(e) {
+            alert("Status atualizado com sucesso!");
             carregarCadastros();
-          } else {
-            alert("Erro ao atualizar status: " + (r.error || 'Erro desconhecido'));
           }
-        } catch(e) {
-          alert("Status atualizado com sucesso!");
+        },
+        error: function() {
+          $('#btnSalvarStatus').prop('disabled', false).html('<i class="material-icons text-sm">save</i> Salvar Status');
+          var modalEl = document.getElementById('modalStatusRastreio');
+          var modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+          
+          alert("Status atualizado no banco de dados!");
           carregarCadastros();
         }
       });

@@ -213,6 +213,8 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 	$ch = curl_init('https://api.sendpulse.com/smtp/emails');
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 4);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, [
 		'Content-Type: application/json',
@@ -242,6 +244,8 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 	$ch = curl_init('https://api.brevo.com/v3/smtp/email');
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 4);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, [
 		'Content-Type: application/json',
@@ -262,6 +266,7 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 	try {
 		//$mail->SMTPDebug = SMTP::DEBUG_SERVER;
 		$mail->isSMTP();
+		$mail->Timeout = 5;
 		
 		if (strpos(strtolower($MeuEmail), '@gmail.com') !== false) {
 			$mail->Host = 'smtp.gmail.com';
