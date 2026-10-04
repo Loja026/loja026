@@ -448,13 +448,15 @@ switch($acao){
                 $_REQUEST['override_status_desc'] = $st_info['desc'];
 
                 ob_start();
-                @include(__DIR__ . '/../../api/phpmailer.php');
-                ob_end_clean();
+                include(__DIR__ . '/../../api/phpmailer.php');
+                $out_email = ob_get_clean();
+
+                file_put_contents(__DIR__ . '/../../api/mail_debug.txt', date('[Y-m-d H:i:s] ') . "atualizar_status_rastreio email output: " . strip_tags($out_email) . "\n", FILE_APPEND);
             }
         }
 
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['ok' => true]);
+        echo json_encode(['ok' => true, 'email_output' => isset($out_email) ? strip_tags($out_email) : 'sem_envio']);
     break;
 
     case "pix_codigo_consultar_status":

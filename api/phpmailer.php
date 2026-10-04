@@ -56,7 +56,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 		// Se o SMTP estiver desligado (0), encerra o script de email silenciosamente
 		if ($smtpAtivo === 0) {
 			echo 'SMTP Desativado. E-mail não enviado.';
-			exit;
+			return;
 		}
 		
 		$recorte = explode("|", $emailPHPMAILER ?? '');
@@ -65,7 +65,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 		if (empty($MeuEmail) || empty($MinhaSenha)) {
 		    error_log('[Email Debug] Credenciais SMTP ausentes.');
 		    echo 'Erro: Credenciais SMTP não configuradas.';
-		    exit;
+		    return;
 		}
 		
 		$sql = mysqli_query($conn, "SELECT * from config");
@@ -232,10 +232,13 @@ if (strtolower($MeuEmail) === 'sendpulse') {
         error_log("[Email Debug] Erro SendPulse API - HTTP $httpCode: $response");
 		echo "Erro ao enviar mensagem via SendPulse API. Código: $httpCode Resposta: $response";
 	}
-} elseif (strpos($MinhaSenha, 'xkeysib-') === 0 || strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false) {
-    // Usar a API HTTP do Brevo (Porta 443) em vez de SMTP para evitar bloqueios do Railway
+} elseif (strpos($MinhaSenha, 'xkeysib-') === 0 || strpos(strtolower($MeuEmail), 'brevo') !== false || strpos(strtolower($emailPHPMAILER), 'xkeysib-') !== false) {
+    // Usar a API HTTP do Brevo (Porta 443) em vez de SMTP para evitar bloqueios
+    $apiKey = (strpos($MinhaSenha, 'xkeysib-') === 0) ? $MinhaSenha : ((strpos($MeuEmail, 'xkeysib-') === 0) ? $MeuEmail : trim($emailPHPMAILER));
+    $senderEmail = filter_var($MeuEmail, FILTER_VALIDATE_EMAIL) ? $MeuEmail : ('nao-responda@' . ($_SERVER['HTTP_HOST'] ?? 'loja.com'));
+    
 	$payload = json_encode([
-		"sender" => ["name" => "Mercado Livre", "email" => $MeuEmail],
+		"sender" => ["name" => $loja, "email" => $senderEmail],
 		"to" => [["email" => $emailCliente, "name" => $nome]],
 		"subject" => "$texto1email id:$idCliente",
 		"htmlContent" => $texto
@@ -244,18 +247,20 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 	$ch = curl_init('https://api.brevo.com/v3/smtp/email');
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_POST, true);
-	curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+	curl_setopt($ch, CURLOPT_TIMEOUT, 8);
 	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 4);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, [
 		'Content-Type: application/json',
-		'api-key: ' . $MinhaSenha,
+		'api-key: ' . $apiKey,
 		'accept: application/json'
 	]);
 
 	$response = curl_exec($ch);
 	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	curl_close($ch);
+
+	file_put_contents(__DIR__ . '/mail_debug.txt', date('[Y-m-d H:i:s] ') . "Brevo HTTP $httpCode - $response\n", FILE_APPEND);
 
 	if ($httpCode == 201 || $httpCode == 200) {
 		echo 'Email enviado com sucesso';
