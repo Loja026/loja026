@@ -112,6 +112,40 @@ while($sql && $row = mysqli_fetch_array($sql)){
 					<p style='margin: 0 0 5px 0;'>Em caso de dúvidas, nossa equipe está à disposição.</p>
 					<p style='margin: 0;'>&copy; " . date('Y') . " $loja. Todos os direitos reservados.</p>
 				</div>
+		} else if ($tipoEmail == 'status_rastreio') {
+			// ==========================================
+			// TEMPLATE: ATUALIZAÇÃO DE STATUS DE RASTREIO
+			// ==========================================
+			$statusNome = !empty($_REQUEST['override_status_nome']) ? $_REQUEST['override_status_nome'] : 'Status Atualizado';
+			$statusDesc = !empty($_REQUEST['override_status_desc']) ? $_REQUEST['override_status_desc'] : 'Seu pedido teve uma nova movimentação.';
+			
+			$texto1email = "Atualização do seu pedido: $statusNome";
+			$tracking_link = "$dominio/rastreio.php?produto=$codigoProduto&confirmado=1&cid=$idCliente";
+
+			$texto = "
+			<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background-color: #fff;'>
+				<div style='background-color: #3483fa; padding: 25px; text-align: center;'>
+					<h1 style='color: white; margin: 0; font-size: 22px;'>Atualização no seu pedido 📦</h1>
+				</div>
+				<div style='padding: 30px; color: #333; line-height: 1.6;'>
+					<p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
+					<p style='font-size: 16px;'>O seu pedido teve uma nova atualização de rastreamento:</p>
+					
+					<div style='background-color: #f8f9fa; border-left: 4px solid #3483fa; padding: 15px 20px; margin: 20px 0; border-radius: 4px;'>
+						<h3 style='margin: 0 0 5px 0; color: #3483fa; font-size: 18px;'>$statusNome</h3>
+						<p style='margin: 0; color: #555; font-size: 14px;'>$statusDesc</p>
+					</div>
+
+					<p style='font-size: 15px; color: #666;'>Você pode acompanhar o histórico completo do seu pedido a qualquer momento clicando no botão abaixo:</p>
+					
+					<div style='text-align: center; margin-top: 30px; margin-bottom: 20px;'>
+						<a href='$tracking_link' style='background-color: #00a650; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;'>Acompanhar meu Pedido</a>
+					</div>
+				</div>
+				<div style='background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e0e0e0;'>
+					<p style='margin: 0 0 5px 0;'>Atenciosamente, equipe <strong>$loja</strong></p>
+					<p style='margin: 0;'>&copy; " . date('Y') . " $loja. Todos os direitos reservados.</p>
+				</div>
 			</div>";
 		} else {
 			// ==========================================

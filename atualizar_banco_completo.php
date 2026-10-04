@@ -34,7 +34,8 @@ addColumn($conn, 'pixgerado', 'freepay_status', "VARCHAR(32) DEFAULT 'PENDING'")
 addColumn($conn, 'pixgerado', 'pixgo_payment_id', "VARCHAR(64) DEFAULT ''");
 addColumn($conn, 'pixgerado', 'pixgo_status', "VARCHAR(32) DEFAULT 'pending'");
 addColumn($conn, 'pixgerado', 'carthero_payment_id', "VARCHAR(255) DEFAULT NULL");
-addColumn($conn, 'pixgerado', 'carthero_status', "VARCHAR(50) DEFAULT NULL");
+addColumn($conn, 'pixgerado', 'status_rastreio', "VARCHAR(100) DEFAULT NULL");
+addColumn($conn, 'pixgerado', 'data_status_rastreio', "DATETIME DEFAULT NULL");
 
 // Atualizações da tabela clientes (Remarketing e Leads)
 addColumn($conn, 'clientes', 'variacoes', 'LONGTEXT DEFAULT NULL');
@@ -42,6 +43,8 @@ addColumn($conn, 'clientes', 'produto_codigo', "VARCHAR(100) DEFAULT NULL");
 addColumn($conn, 'clientes', 'produto_nome', "VARCHAR(255) DEFAULT NULL");
 addColumn($conn, 'clientes', 'data_cadastro', "DATETIME DEFAULT CURRENT_TIMESTAMP");
 addColumn($conn, 'clientes', 'ip_real', "VARCHAR(60) DEFAULT NULL");
+addColumn($conn, 'clientes', 'status_rastreio', "VARCHAR(100) DEFAULT NULL");
+addColumn($conn, 'clientes', 'data_status_rastreio', "DATETIME DEFAULT NULL");
 
 // Atualizações da tabela pix (configurações)
 addColumn($conn, 'pix', 'tipo_chave', "VARCHAR(20) NOT NULL DEFAULT 'aleatoria' AFTER chave");

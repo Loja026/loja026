@@ -57,6 +57,25 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
       vertical-align: middle !important;
       max-width: 250px;
     }
+    .table-responsive {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 991px) {
+      .table td, .table th {
+        min-width: 130px;
+        font-size: 0.78rem !important;
+      }
+      .card-header .bg-gradient-primary {
+        flex-direction: column;
+        align-items: flex-start !important;
+      }
+      .card-header .d-flex.gap-2 {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+    }
   </style>
 
     <link rel="shortcut icon" href="../arquivos/favicon.png?v=<?php echo time(); ?>">
@@ -198,6 +217,49 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
     </div>
   </main>
 
+  <!-- MODAL ATUALIZAR STATUS DE RASTREIO -->
+  <div class="modal fade" id="modalStatusRastreio" tabindex="-1" aria-labelledby="modalStatusLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white border-0 shadow">
+        <div class="modal-header border-bottom border-secondary">
+          <h5 class="modal-title text-white d-flex align-items-center gap-2" id="modalStatusLabel">
+            <i class="material-icons text-info">local_shipping</i> Atualizar Status do Pedido
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="status_cliente_id" value="">
+          <p class="text-sm text-secondary mb-3">Cliente: <strong id="status_cliente_nome" class="text-white"></strong></p>
+          
+          <div class="mb-3">
+            <label class="form-label text-white font-weight-bold">Selecione o Novo Status:</label>
+            <select id="select_status_rastreio" class="form-select text-white border-secondary p-2" style="border-radius:6px; color:#fff !important; background:#222 !important;">
+              <option value="preparando_envio">1. Preparando envio</option>
+              <option value="pedido_solicitado">2. Pedido solicitado</option>
+              <option value="enviado_transportadora">3. Enviado para transportadora</option>
+              <option value="em_transito">4. Em trânsito para ponto de distribuição de sua cidade</option>
+              <option value="centro_distribuicao">5. Pedido chegou ao centro de distribuição</option>
+              <option value="rota_entrega">6. Pedido em rota de entrega</option>
+              <option value="entregue">7. Pedido entregue</option>
+              <option value="ausente">8. Não encontrou ninguém no endereço</option>
+            </select>
+          </div>
+
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" id="chk_enviar_email" checked>
+            <label class="form-check-label text-white text-sm" for="chk_enviar_email">Enviar e-mail de notificação para o cliente</label>
+          </div>
+        </div>
+        <div class="modal-footer border-top border-secondary">
+          <button type="button" class="btn btn-secondary btn-sm mb-0" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" onclick="salvarStatusRastreio()" id="btnSalvarStatus" class="btn bg-gradient-info btn-sm mb-0 d-flex align-items-center gap-1">
+            <i class="material-icons text-sm">save</i> Salvar Status
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!--   Core JS Files   -->
   <script src="./assets/js/core/popper.min.js"></script>
   <script src="./assets/js/core/bootstrap.min.js"></script>
@@ -268,6 +330,51 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
               console.log("Response:", res);
               console.log("Error:", e);
           }
+      });
+    }
+
+    function abrirModalStatus(id, currentStatus, nome) {
+      $('#status_cliente_id').val(id);
+      $('#status_cliente_nome').text(nome);
+      if (currentStatus) {
+        $('#select_status_rastreio').val(currentStatus);
+      } else {
+        $('#select_status_rastreio').val('preparando_envio');
+      }
+      var myModal = new bootstrap.Modal(document.getElementById('modalStatusRastreio'));
+      myModal.show();
+    }
+
+    function salvarStatusRastreio() {
+      var id = $('#status_cliente_id').val();
+      var status = $('#select_status_rastreio').val();
+      var enviarEmail = $('#chk_enviar_email').is(':checked') ? 1 : 0;
+      
+      $('#btnSalvarStatus').prop('disabled', true).html('<i class="fa fa-spinner fa-spin me-1"></i> Salvando...');
+      
+      $.post('api_adm/', {
+        painel: 'atualizar_status_rastreio',
+        id: id,
+        status_rastreio: status,
+        enviar_email: enviarEmail
+      }, function(res) {
+        $('#btnSalvarStatus').prop('disabled', false).html('<i class="material-icons text-sm">save</i> Salvar Status');
+        var modalEl = document.getElementById('modalStatusRastreio');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        
+        try {
+          var r = typeof res === 'string' ? JSON.parse(res) : res;
+          if (r.ok) {
+            alert("Status do pedido atualizado com sucesso!" + (enviarEmail ? " E-mail enviado ao cliente." : ""));
+            carregarCadastros();
+          } else {
+            alert("Erro ao atualizar status: " + (r.error || 'Erro desconhecido'));
+          }
+        } catch(e) {
+          alert("Status atualizado com sucesso!");
+          carregarCadastros();
+        }
       });
     }
 	</script>

@@ -68,7 +68,6 @@ $logo = !empty($logo_files) ? 'arquivos/logo/' . basename($logo_files[0]) : '';
 $gateway_status = strtoupper(trim((string)($pix['mp_status'] ?? $pix['freepay_status'] ?? $pix['pixgo_status'] ?? $pix['carthero_status'] ?? '')));
 $paid_statuses = ['APPROVED', 'PAID', 'PAGO', 'COMPLETED', 'RECEIVED', 'CONFIRMED', 'SUCCEEDED', 'SETTLED'];
 $is_paid = in_array($gateway_status, $paid_statuses, true) || strtoupper((string)($pix['status'] ?? '')) === 'PAGO' || (string)($_GET['confirmado'] ?? '') === '1';
-$status_label = $is_paid ? 'Pagamento Confirmado' : 'Aguardando Pagamento';
 $created_at = !empty($pix['data_criacao']) ? strtotime($pix['data_criacao']) : time();
 
 $data_entrega = new DateTime();
@@ -92,7 +91,98 @@ $valor_formatado = number_format($valor, 2, ',', '.');
 $destino = trim((string)($cliente['cidade'] ?? ''));
 if (!empty($cliente['estado'])) $destino .= ($destino ? ', ' : '') . $cliente['estado'];
 if ($destino === '') $destino = 'Seu endereço de entrega';
-$etapas = $is_paid ? 1 : 0;
+
+$status_key = trim((string)($cliente['status_rastreio'] ?? $pix['status_rastreio'] ?? ''));
+if (empty($status_key)) {
+    $status_key = $is_paid ? 'preparando_envio' : 'pedido_solicitado';
+}
+
+$status_map = [
+    'pedido_solicitado' => [
+        'title' => 'Pedido solicitado',
+        'desc' => 'O pedido foi registrado em nosso sistema.',
+        'head' => 'Aguardando pagamento',
+        'label' => 'Pedido registrado',
+        'progress' => 25
+    ],
+    'preparando_envio' => [
+        'title' => 'Preparando envio',
+        'desc' => 'O vendedor está preparando o seu pacote.',
+        'head' => 'Chega dia ' . $delivery_date,
+        'label' => 'Pagamento Confirmado',
+        'progress' => 45
+    ],
+    'enviado_transportadora' => [
+        'title' => 'Enviado para transportadora',
+        'desc' => 'Seu pacote foi entregue à transportadora responsável.',
+        'head' => 'Pacote enviado',
+        'label' => 'Enviado para transportadora',
+        'progress' => 60
+    ],
+    'em_transito' => [
+        'title' => 'Em trânsito para ponto de distribuição de sua cidade',
+        'desc' => 'Seu pedido está a caminho do centro de distribuição local.',
+        'head' => 'Em trânsito',
+        'label' => 'A caminho da sua cidade',
+        'progress' => 75
+    ],
+    'centro_distribuicao' => [
+        'title' => 'Pedido chegou ao centro de distribuição',
+        'desc' => 'Pacote recebido no centro de distribuição da sua região.',
+        'head' => 'No centro de distribuição',
+        'label' => 'Chegou na sua região',
+        'progress' => 85
+    ],
+    'rota_entrega' => [
+        'title' => 'Pedido em rota de entrega',
+        'desc' => 'O entregador saiu para entregar seu pedido no endereço.',
+        'head' => 'Saiu para entrega hoje',
+        'label' => 'Em rota de entrega',
+        'progress' => 92
+    ],
+    'entregue' => [
+        'title' => 'Pedido entregue',
+        'desc' => 'Pedido entregue com sucesso no seu endereço!',
+        'head' => 'Entregue com sucesso!',
+        'label' => 'Pedido Entregue',
+        'progress' => 100
+    ],
+    'ausente' => [
+        'title' => 'Não encontrou ninguém no endereço',
+        'desc' => 'Tentativa de entrega realizada. Nova tentativa será feita em breve.',
+        'head' => 'Tentativa de entrega realizada',
+        'label' => 'Destinatário Ausente',
+        'progress' => 88
+    ]
+];
+
+$seq_keys = ['pedido_solicitado', 'preparando_envio', 'enviado_transportadora', 'em_transito', 'centro_distribuicao', 'rota_entrega', 'entregue'];
+if ($status_key === 'ausente') {
+    $seq_keys = ['pedido_solicitado', 'preparando_envio', 'enviado_transportadora', 'em_transito', 'centro_distribuicao', 'rota_entrega', 'ausente'];
+}
+
+$cur_info = $status_map[$status_key] ?? $status_map['preparando_envio'];
+$progress_pct = $cur_info['progress'];
+$status_title = $cur_info['head'];
+$status_label = $cur_info['label'];
+
+$events = [];
+$idx = array_search($status_key, $seq_keys);
+if ($idx === false) $idx = 1;
+
+$date_upd = !empty($cliente['data_status_rastreio']) ? strtotime($cliente['data_status_rastreio']) : $created_at;
+
+for ($i = $idx; $i >= 0; $i--) {
+    $k = $seq_keys[$i];
+    if (isset($status_map[$k])) {
+        $time_offset = $date_upd - (($idx - $i) * 3600 * 6);
+        $events[] = [
+            'title' => $status_map[$k]['title'],
+            'desc' => $status_map[$k]['desc'],
+            'time' => date('d/m/Y H:i', $time_offset)
+        ];
+    }
+}
 
 $img_src = '';
 $img_file = trim((string)($produto['img'] ?? ''));
@@ -118,18 +208,19 @@ if (empty($img_src) && !empty($produto['codigo'])) {
 <title>Acompanhar pedido - <?php echo htmlspecialchars($nome_loja); ?></title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-*{box-sizing:border-box}body{margin:0;background:#ebebeb;color:#333;font-family:Arial,Helvetica,sans-serif}.header{background:<?php echo htmlspecialchars($cor); ?>;border-bottom:1px solid rgba(0,0,0,.1)}.header-inner{max-width:1180px;margin:auto;min-height:64px;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}.logo{max-width:180px;max-height:40px;object-fit:contain}.brand{font-weight:600;font-size:20px}.secure{font-size:13px;color:#555}.wrap{max-width:1180px;margin:0 auto;padding:32px 16px 60px;display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:24px}.card{background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);overflow:hidden}.status-head{padding:30px 32px 16px;display:flex;gap:18px}.status-icon{width:58px;height:58px;border-radius:50%;background:#e8f5e9;color:#00a650;display:flex;align-items:center;justify-content:center;font-size:28px;flex:none}.status-title{margin:0;color:#00a650;font-size:28px;line-height:1.2}.status-label{font-weight:600;margin:8px 0;color:#333}.guarantee{color:#666;font-size:14px;margin-top:18px}.progress-area{padding:12px 32px 30px}.bar{height:8px;border-radius:20px;background:#f1f1f1;overflow:hidden}.bar span{display:block;height:100%;width:50%;background:#00a650;border-radius:20px}.steps{display:flex;justify-content:space-between;gap:10px;margin-top:12px;color:#666;font-size:11px;font-weight:bold;text-transform:uppercase}.steps span:first-child,.steps span:nth-child(2){color:#333}.history{padding:28px 32px}.history h2,.side h2{font-size:20px;margin:0 0 26px}.event{position:relative;padding:0 0 28px 38px;border-left:2px solid #eee;margin-left:8px}.event:last-child{padding-bottom:0;border-left-color:transparent}.dot{position:absolute;left:-9px;top:2px;width:16px;height:16px;border-radius:50%;background:#ddd;border:3px solid #fff;box-shadow:0 0 0 1px #ddd}.event:first-of-type .dot{background:#00a650;box-shadow:0 0 0 1px #00a650}.event h3{font-size:17px;margin:0 0 6px}.event p{font-size:14px;color:#666;margin:0;line-height:1.4}.event time{display:inline-block;margin-top:9px;color:#999;background:#f8f8f8;padding:5px 8px;border-radius:4px;font-size:11px;font-weight:bold}.side{padding:24px}.product{display:flex;gap:14px;padding-bottom:20px;border-bottom:1px solid #eee}.product-icon{width:56px;height:56px;border-radius:7px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:24px}.product-name{font-size:14px;font-weight:600}.product-meta{font-size:12px;color:#666;margin-top:5px}.total{display:flex;justify-content:space-between;align-items:center;margin-top:20px}.total strong{font-size:23px}.delivery{margin-top:24px;padding-top:20px;border-top:1px solid #eee;font-size:14px;line-height:1.5}.delivery b{display:block;margin-bottom:5px}.footer{padding:24px 16px;background:#fff;border-top:1px solid #ddd;text-align:center;color:#777;font-size:12px}.footer a{color:#666;margin:0 8px;text-decoration:none}@media(max-width:800px){.wrap{grid-template-columns:1fr;padding:20px 10px 40px}.status-head{padding:24px 20px 12px}.progress-area,.history{padding-left:20px;padding-right:20px}.status-title{font-size:23px}.header-inner{padding:10px 16px}.secure{font-size:11px}.steps{font-size:9px}}
+*{box-sizing:border-box}body{margin:0;background:#ebebeb;color:#333;font-family:Arial,Helvetica,sans-serif}.header{background:<?php echo htmlspecialchars($cor); ?>;border-bottom:1px solid rgba(0,0,0,.1)}.header-inner{max-width:1180px;margin:auto;min-height:64px;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}.logo{max-width:180px;max-height:40px;object-fit:contain}.brand{font-weight:600;font-size:20px}.secure{font-size:13px;color:#555}.wrap{max-width:1180px;margin:0 auto;padding:32px 16px 60px;display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:24px}.card{background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);overflow:hidden}.status-head{padding:30px 32px 16px;display:flex;gap:18px}.status-icon{width:58px;height:58px;border-radius:50%;background:#e8f5e9;color:#00a650;display:flex;align-items:center;justify-content:center;font-size:28px;flex:none}.status-title{margin:0;color:#00a650;font-size:28px;line-height:1.2}.status-label{font-weight:600;margin:8px 0;color:#333}.guarantee{color:#666;font-size:14px;margin-top:18px}.progress-area{padding:12px 32px 30px}.bar{height:8px;border-radius:20px;background:#f1f1f1;overflow:hidden}.bar span{display:block;height:100%;width:<?php echo $progress_pct; ?>%;background:#00a650;border-radius:20px;transition:width 0.4s ease}.steps{display:flex;justify-content:space-between;gap:10px;margin-top:12px;color:#666;font-size:11px;font-weight:bold;text-transform:uppercase}.steps span:first-child,.steps span:nth-child(2){color:#333}.history{padding:28px 32px}.history h2,.side h2{font-size:20px;margin:0 0 26px}.event{position:relative;padding:0 0 28px 38px;border-left:2px solid #eee;margin-left:8px}.event:last-child{padding-bottom:0;border-left-color:transparent}.dot{position:absolute;left:-9px;top:2px;width:16px;height:16px;border-radius:50%;background:#ddd;border:3px solid #fff;box-shadow:0 0 0 1px #ddd}.event:first-of-type .dot{background:#00a650;box-shadow:0 0 0 1px #00a650}.event h3{font-size:17px;margin:0 0 6px}.event p{font-size:14px;color:#666;margin:0;line-height:1.4}.event time{display:inline-block;margin-top:9px;color:#999;background:#f8f8f8;padding:5px 8px;border-radius:4px;font-size:11px;font-weight:bold}.side{padding:24px}.product{display:flex;gap:14px;padding-bottom:20px;border-bottom:1px solid #eee}.product-icon{width:56px;height:56px;border-radius:7px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:24px}.product-name{font-size:14px;font-weight:600}.product-meta{font-size:12px;color:#666;margin-top:5px}.total{display:flex;justify-content:space-between;align-items:center;margin-top:20px}.total strong{font-size:23px}.delivery{margin-top:24px;padding-top:20px;border-top:1px solid #eee;font-size:14px;line-height:1.5}.delivery b{display:block;margin-bottom:5px}.footer{padding:24px 16px;background:#fff;border-top:1px solid #ddd;text-align:center;color:#777;font-size:12px}.footer a{color:#666;margin:0 8px;text-decoration:none}@media(max-width:800px){.wrap{grid-template-columns:1fr;padding:20px 10px 40px}.status-head{padding:24px 20px 12px}.progress-area,.history{padding-left:20px;padding-right:20px}.status-title{font-size:23px}.header-inner{padding:10px 16px}.secure{font-size:11px}.steps{font-size:9px}}
 </style>
 </head>
 <body>
 <header class="header"><div class="header-inner"><div><?php if ($logo): ?><img class="logo" src="<?php echo htmlspecialchars($logo); ?>" alt="<?php echo htmlspecialchars($nome_loja); ?>"><?php else: ?><span class="brand"><?php echo htmlspecialchars($nome_loja); ?></span><?php endif; ?></div><div class="secure"><i class="fa-solid fa-shield-halved"></i> Compra segura</div></div></header>
 <main class="wrap">
 <section class="card">
-<div class="status-head"><div class="status-icon"><i class="fa-solid <?php echo $is_paid ? 'fa-truck' : 'fa-clock'; ?>"></i></div><div><h1 class="status-title"><?php echo $is_paid ? 'Chega dia ' . htmlspecialchars($delivery_date) : 'Aguardando pagamento'; ?></h1><p class="status-label">Status: <?php echo htmlspecialchars($status_label); ?></p><p class="guarantee"><i class="fa-solid fa-shield-halved" style="color:#00a650"></i> Compra Garantida</p></div></div>
+<div class="status-head"><div class="status-icon"><i class="fa-solid <?php echo ($status_key === 'entregue') ? 'fa-circle-check' : (($status_key === 'ausente') ? 'fa-triangle-exclamation' : 'fa-truck'); ?>"></i></div><div><h1 class="status-title"><?php echo htmlspecialchars($status_title); ?></h1><p class="status-label">Status: <?php echo htmlspecialchars($status_label); ?></p><p class="guarantee"><i class="fa-solid fa-shield-halved" style="color:#00a650"></i> Compra Garantida</p></div></div>
 <div class="progress-area"><div class="bar"><span></span></div><div class="steps"><span>Pedido realizado</span><span>Pagamento</span><span>Enviado</span><span>Entregue</span></div></div>
 <div class="history"><h2><i class="fa-solid fa-clock-rotate-left" style="color:#3483fa"></i> Histórico de movimentação</h2>
-<div class="event"><span class="dot"></span><h3><?php echo $is_paid ? 'Preparando envio' : 'Pedido solicitado'; ?></h3><p><?php echo $is_paid ? 'O vendedor está preparando o seu pacote.' : 'O pedido foi registrado em nosso sistema.'; ?></p><time><?php echo date('d/m/Y', $created_at); ?></time></div>
-<?php if ($is_paid): ?><div class="event"><span class="dot"></span><h3>Pedido solicitado</h3><p>O pedido foi registrado em nosso sistema.</p><time><?php echo date('d/m/Y', $created_at); ?></time></div><?php endif; ?>
+<?php foreach ($events as $ev): ?>
+<div class="event"><span class="dot"></span><h3><?php echo htmlspecialchars($ev['title']); ?></h3><p><?php echo htmlspecialchars($ev['desc']); ?></p><time><?php echo htmlspecialchars($ev['time']); ?></time></div>
+<?php endforeach; ?>
 </div></section>
 <aside class="card side"><h2>Produtos</h2><div class="product"><?php if (!empty($img_src)): ?><img src="<?php echo htmlspecialchars($img_src); ?>" alt="<?php echo htmlspecialchars($nome_produto); ?>" style="width:56px;height:56px;object-fit:contain;border-radius:7px;border:1px solid #eee;background:#fff;padding:2px;"><?php else: ?><div class="product-icon"><i class="fa-solid fa-box"></i></div><?php endif; ?><div><div class="product-name"><?php echo htmlspecialchars($nome_produto); ?></div><div class="product-meta">1 unidade</div></div></div><div class="total"><span style="font-size:13px;font-weight:bold;color:#777;text-transform:uppercase">Total</span><strong>R$ <?php echo $valor_formatado; ?></strong></div><div class="delivery"><b>Informações de entrega</b><span><?php echo htmlspecialchars($destino); ?></span><br><span>Previsão: <?php echo htmlspecialchars($delivery_date); ?></span></div></aside>
 </main>

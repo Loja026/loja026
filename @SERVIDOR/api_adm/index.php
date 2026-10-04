@@ -402,6 +402,60 @@ switch($acao){
         echo json_encode($r ? ['ok'=>true] : ['ok'=>false,'error'=>mysqli_error($conn)]);
     break;
 
+    case "atualizar_status_rastreio":
+        $id = (int)($_POST['id'] ?? 0);
+        $status_rastreio = trim((string)($_POST['status_rastreio'] ?? ''));
+        $enviar_email = (int)($_POST['enviar_email'] ?? 0);
+
+        if (!$id || empty($status_rastreio)) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['ok' => false, 'error' => 'ID ou status inválido']);
+            break;
+        }
+
+        $status_safe = mysqli_real_escape_string($conn, $status_rastreio);
+        $r_upd = mysqli_query($conn, "UPDATE clientes SET status_rastreio='$status_safe', data_status_rastreio=NOW() WHERE id='$id'");
+
+        $q_c = mysqli_query($conn, "SELECT * FROM clientes WHERE id='$id' LIMIT 1");
+        if ($q_c && $r_c = mysqli_fetch_assoc($q_c)) {
+            if (!empty($r_c['ip'])) {
+                $raw_ip = base64_decode($r_c['ip']);
+                $ip_safe = mysqli_real_escape_string($conn, $raw_ip);
+                mysqli_query($conn, "UPDATE pixgerado SET status_rastreio='$status_safe', data_status_rastreio=NOW() WHERE ip='$ip_safe'");
+            }
+
+            if ($enviar_email === 1 && !empty($r_c['email']) && $r_c['email'] !== '-') {
+                $status_map_names = [
+                    'preparando_envio' => ['title' => 'Preparando envio', 'desc' => 'O vendedor está preparando o seu pacote.'],
+                    'pedido_solicitado' => ['title' => 'Pedido solicitado', 'desc' => 'O pedido foi registrado em nosso sistema.'],
+                    'enviado_transportadora' => ['title' => 'Enviado para transportadora', 'desc' => 'Seu pacote foi entregue à transportadora responsável.'],
+                    'em_transito' => ['title' => 'Em trânsito para ponto de distribuição de sua cidade', 'desc' => 'Seu pedido está a caminho do centro de distribuição local.'],
+                    'centro_distribuicao' => ['title' => 'Pedido chegou ao centro de distribuição', 'desc' => 'Pacote recebido no centro de distribuição da sua região.'],
+                    'rota_entrega' => ['title' => 'Pedido em rota de entrega', 'desc' => 'O entregador saiu para entregar seu pedido no endereço.'],
+                    'entregue' => ['title' => 'Pedido entregue', 'desc' => 'Pedido entregue com sucesso no seu endereço!'],
+                    'ausente' => ['title' => 'Não encontrou ninguém no endereço', 'desc' => 'Tentativa de entrega realizada. Nova tentativa será feita em breve.']
+                ];
+
+                $st_info = $status_map_names[$status_rastreio] ?? ['title' => 'Status Atualizado', 'desc' => 'Seu pedido teve uma nova movimentação.'];
+
+                $_REQUEST['tipo'] = 'status_rastreio';
+                $_REQUEST['override_ip'] = !empty($r_c['ip']) ? base64_decode($r_c['ip']) : '';
+                $_REQUEST['override_email'] = $r_c['email'];
+                $_REQUEST['override_nome'] = $r_c['nome'];
+                $_REQUEST['override_produto'] = $r_c['produto_codigo'] ?? '';
+                $_REQUEST['override_status_nome'] = $st_info['title'];
+                $_REQUEST['override_status_desc'] = $st_info['desc'];
+
+                ob_start();
+                @include(__DIR__ . '/../../api/phpmailer.php');
+                ob_end_clean();
+            }
+        }
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => true]);
+    break;
+
     case "pix_codigo_consultar_status":
         $codigo_id = (int)($_POST['codigo_id'] ?? 0);
         if (!$codigo_id) { echo json_encode(['ok'=>false,'error'=>'ID inválido']); break; }
@@ -583,8 +637,21 @@ switch($acao){
 					$status_fp = strtolower($row_p['freepay_status'] ?? '');
 					$status_ch = strtolower($row_p['carthero_status'] ?? '');
 					
-					if (in_array($status_main, $pago_arrays) || in_array($status_pg, $pago_arrays) || in_array($status_mp, $pago_arrays) || in_array($status_fp, $pago_arrays) || in_array($status_ch, $pago_arrays)) {
+					$is_order_paid = (
+						!empty($rowx['pagamento_confirmado']) || 
+						in_array($status_main, $pago_arrays) || 
+						in_array($status_pg, $pago_arrays) || 
+						in_array($status_mp, $pago_arrays) || 
+						in_array($status_fp, $pago_arrays) || 
+						in_array($status_ch, $pago_arrays)
+					);
+					
+					$status_rastreio_atual = $rowx['status_rastreio'] ?? 'preparando_envio';
+					$btn_status_rastreio = '';
+					
+					if ($is_order_paid) {
 						$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-success mt-1" title="Pago" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:4px;"><i class="material-icons" style="font-size:12px;">check_circle</i> Pago</span>';
+						$btn_status_rastreio = '<button type="button" class="btn btn-sm bg-gradient-info mb-0 px-2 py-1 text-xs font-weight-bold mt-1 d-inline-flex align-items-center gap-1" onclick="abrirModalStatus('.$id.', \''.addslashes($status_rastreio_atual).'\', \''.addslashes($nome).'\')" title="Atualizar Status do Rastreio"><i class="material-icons" style="font-size:14px;">local_shipping</i> Atualizar Status</button>';
 					} else {
 						$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-warning mt-1" title="Reservado / Aguardando" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:4px;"><i class="material-icons" style="font-size:12px;">schedule</i> Reservado</span>';
 					}
@@ -702,6 +769,7 @@ switch($acao){
 								<span id="'.$ip.'" onclick="sendBlock(this.id)" style="cursor:pointer; padding:6px 12px; display:inline-flex; align-items:center;" class="badge badge-sm bg-gradient-danger" title="Bloquear"><i class="material-icons" style="font-size:16px;">block</i></span>
 							</div>
 							'.$status_pagamento_badge.'
+							'.$btn_status_rastreio.'
 						</div>
 					  </td>
 					</tr>';
