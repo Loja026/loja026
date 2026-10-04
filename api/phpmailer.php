@@ -96,6 +96,34 @@ while($sql && $row = mysqli_fetch_array($sql)){
 			// TEMPLATE: PEDIDO PENDENTE / PIX
 			// ==========================================
 			$texto1email = "Finalize sua compra - PIX Gerado com sucesso!";
+			
+			$produto_html = "";
+			$payment_link = "$dominio/payment.php";
+			$override_produto = $_REQUEST['override_produto'] ?? '';
+			
+			if (empty($override_produto) && isset($ip)) {
+				$q_pix = mysqli_query($conn, "SELECT produto FROM pixgerado WHERE ip='$ip' ORDER BY id DESC LIMIT 1");
+				if ($q_pix && $r_pix = mysqli_fetch_assoc($q_pix)) {
+					$override_produto = $r_pix['produto'];
+				}
+			}
+
+			if (!empty($override_produto)) {
+				$q_prod = mysqli_query($conn, "SELECT nome, img FROM produto WHERE codigo='$override_produto' LIMIT 1");
+				if ($q_prod && $r_prod = mysqli_fetch_assoc($q_prod)) {
+					$prod_nome = htmlspecialchars($r_prod['nome']);
+					$prod_img = $dominio . "/arquivos/" . $r_prod['img'];
+					
+					$produto_html = "
+					<div style='text-align: center; margin: 20px 0; border: 1px solid #eee; padding: 15px; border-radius: 8px; background-color: #fff;'>
+						<img src='$prod_img' alt='$prod_nome' style='max-width: 150px; border-radius: 5px; margin-bottom: 10px;' />
+						<h3 style='margin: 0; color: #333; font-size: 16px;'>$prod_nome</h3>
+					</div>";
+					
+					$payment_link = "$dominio/payment.php?produto=$override_produto";
+				}
+			}
+
 			$texto = "
 			<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
 				<div style='background-color: #ff9800; padding: 25px; text-align: center;'>
@@ -104,6 +132,9 @@ while($sql && $row = mysqli_fetch_array($sql)){
 				<div style='padding: 30px; color: #333; line-height: 1.6;'>
 					<p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
 					<p style='font-size: 16px;'>Notamos que você iniciou uma compra na <strong>$loja</strong>, mas ainda não identificamos o seu pagamento.</p>
+					
+					$produto_html
+
 					<p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, <strong>clique no botão abaixo para gerar um novo PIX</strong> com seus dados já preenchidos e garantir sua reserva.</p>
 					
 					<div style='background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 25px 0; border-radius: 0 6px 6px 0;'>
@@ -111,7 +142,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 					</div>
 
 					<div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
-						<a href='$dominio/payment.php' style='background-color: #ff9800; color: white; padding: 16px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(255, 152, 0, 0.4);'>Gerar Novo PIX e Finalizar Compra</a>
+						<a href='$payment_link' style='background-color: #ff9800; color: white; padding: 16px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(255, 152, 0, 0.4);'>Gerar Novo PIX e Finalizar Compra</a>
 					</div>
 				</div>
 				<div style='background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e0e0e0;'>

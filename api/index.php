@@ -587,6 +587,7 @@ switch($acao){
 
         // Dispara o e-mail automático de PIX Pendente sem quebrar a resposta
         $_REQUEST['tipo'] = 'pendente';
+        $_REQUEST['override_produto'] = $codigo_produto;
         ob_start();
         @include(__DIR__ . '/phpmailer.php');
         ob_end_clean();
