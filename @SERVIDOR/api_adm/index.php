@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
    session_start();
    require_once(__DIR__ . "/../../api/db.php");
    require_once(__DIR__ . "/produto_json.php");
@@ -1860,6 +1860,18 @@ break;
         $dominio = $protocol . '://' . $_SERVER['HTTP_HOST'];
         $loja = "Nossa Loja";
         
+        if (!empty($override_produto)) {
+            $q_prod = mysqli_query($conn, "SELECT img FROM produto WHERE codigo='$override_produto' LIMIT 1");
+            if ($q_prod && $r_prod = mysqli_fetch_assoc($q_prod)) {
+                $prod_img = (strpos($r_prod['img'], 'http') === 0) ? $r_prod['img'] : $dominio . "/arquivos/produtos/" . $override_produto . "/" . $r_prod['img'];
+                $produto_html = "<div style='text-align: center; margin: 20px 0; border: 1px solid #eee; padding: 15px; border-radius: 8px; background-color: #fff;'><img src='$prod_img' alt='$produto_nome' style='max-width: 150px; border-radius: 5px; margin-bottom: 10px;' /><h3 style='margin: 0; color: #333; font-size: 16px;'>$produto_nome</h3></div>";
+            } else {
+                $produto_html = "";
+            }
+        } else {
+            $produto_html = "";
+        }
+        
         if ($status_pagamento === 'approved') {
             $assunto_email = "Pagamento Aprovado - Seu pedido está sendo preparado!";
             $htmlBody = "
@@ -1870,6 +1882,7 @@ break;
                 <div style='padding: 30px; color: #333; line-height: 1.6;'>
                     <p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
                     <p style='font-size: 16px;'>Recebemos o seu pagamento com sucesso referente ao produto <b>$produto_nome</b>. O seu pedido já está separado e começará a ser preparado para o envio.</p>
+					$produto_html
                     <p style='font-size: 16px;'>Agradecemos muito pela sua confiança e por comprar na <strong>$loja</strong>!</p>
                     
                     <div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
@@ -1883,20 +1896,21 @@ break;
             
             $htmlBody = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
-                <div style='background-color: #ff9800; padding: 25px; text-align: center;'>
+                <div style='background-color: #00a650; padding: 25px; text-align: center;'>
                     <h1 style='color: white; margin: 0; font-size: 24px;'>Seu PIX foi gerado! ⏳</h1>
                 </div>
                 <div style='padding: 30px; color: #333; line-height: 1.6;'>
                     <p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
                     <p style='font-size: 16px;'>Notamos que você iniciou uma compra do produto <b>$produto_nome</b> na <strong>$loja</strong>, mas ainda não identificamos o seu pagamento.</p>
-                    <p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, <strong>clique no botão abaixo para gerar um novo PIX</strong> com seus dados já preenchidos e garantir sua reserva.</p>
+					$produto_html
+                    <p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, <strong>clique no botão abaixo para gerar um novo PIX</strong> e finalize seu pagamento e garantir sua reserva.</p>
                     
-                    <div style='background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 25px 0; border-radius: 0 6px 6px 0;'>
+                    <div style='background-color: #fff3e0; border-left: 4px solid #00a650; padding: 15px; margin: 25px 0; border-radius: 0 6px 6px 0;'>
                         <p style='margin: 0; font-size: 15px; color: #e65100;'><strong>Atenção:</strong> Estoque limitado. O seu produto só estará garantido após a confirmação do pagamento.</p>
                     </div>
 
                     <div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
-                        <a href='$payment_link' style='background-color: #ff9800; color: white; padding: 16px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(255, 152, 0, 0.4);'>Gerar Novo PIX e Finalizar Compra</a>
+                        <a href='$payment_link' style='background-color: #3483fa; color: white; padding: 16px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(52, 131, 250, 0.4);'>Gerar Novo PIX e Finalizar Compra</a>
                     </div>
                 </div>
             </div>";
@@ -1990,3 +2004,6 @@ break;
 
 	}
 ?>
+
+
+

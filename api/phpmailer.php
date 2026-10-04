@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 
 session_start();
 
@@ -112,7 +112,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 				$q_prod = mysqli_query($conn, "SELECT nome, img FROM produto WHERE codigo='$override_produto' LIMIT 1");
 				if ($q_prod && $r_prod = mysqli_fetch_assoc($q_prod)) {
 					$prod_nome = htmlspecialchars($r_prod['nome']);
-					$prod_img = $dominio . "/arquivos/" . $r_prod['img'];
+					$prod_img = (strpos($r_prod['img'], 'http') === 0) ? $r_prod['img'] : $dominio . "/arquivos/produtos/" . $override_produto . "/" . $r_prod['img'];
 					
 					$produto_html = "
 					<div style='text-align: center; margin: 20px 0; border: 1px solid #eee; padding: 15px; border-radius: 8px; background-color: #fff;'>
@@ -126,7 +126,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 
 			$texto = "
 			<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
-				<div style='background-color: #ff9800; padding: 25px; text-align: center;'>
+				<div style='background-color: #00a650; padding: 25px; text-align: center;'>
 					<h1 style='color: white; margin: 0; font-size: 24px;'>Seu PIX foi gerado! ⏳</h1>
 				</div>
 				<div style='padding: 30px; color: #333; line-height: 1.6;'>
@@ -135,14 +135,14 @@ while($sql && $row = mysqli_fetch_array($sql)){
 					
 					$produto_html
 
-					<p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, <strong>clique no botão abaixo para gerar um novo PIX</strong> com seus dados já preenchidos e garantir sua reserva.</p>
+					<p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, <strong>clique no botão abaixo para gerar um novo PIX</strong> e finalize seu pagamento e garantir sua reserva.</p>
 					
-					<div style='background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 25px 0; border-radius: 0 6px 6px 0;'>
+					<div style='background-color: #fff3e0; border-left: 4px solid #00a650; padding: 15px; margin: 25px 0; border-radius: 0 6px 6px 0;'>
 						<p style='margin: 0; font-size: 15px; color: #e65100;'><strong>Atenção:</strong> Estoque limitado. O seu produto só estará garantido após a confirmação do pagamento.</p>
 					</div>
 
 					<div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
-						<a href='$payment_link' style='background-color: #ff9800; color: white; padding: 16px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(255, 152, 0, 0.4);'>Gerar Novo PIX e Finalizar Compra</a>
+						<a href='$payment_link' style='background-color: #3483fa; color: white; padding: 16px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(52, 131, 250, 0.4);'>Gerar Novo PIX e Finalizar Compra</a>
 					</div>
 				</div>
 				<div style='background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e0e0e0;'>
@@ -262,3 +262,5 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 ##
 
 ?>
+
+
