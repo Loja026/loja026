@@ -119,6 +119,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 					<p style='margin: 0 0 5px 0;'>Em caso de dúvidas, nossa equipe está à disposição.</p>
 					<p style='margin: 0;'>&copy; " . date('Y') . " $loja. Todos os direitos reservados.</p>
 				</div>
+			</div>";
 		} else if ($tipoEmail == 'status_rastreio') {
 			// ==========================================
 			// TEMPLATE: ATUALIZAÇÃO DE STATUS DE RASTREIO
