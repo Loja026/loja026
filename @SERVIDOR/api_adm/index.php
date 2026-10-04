@@ -379,6 +379,23 @@ switch($acao){
         if ($r_code && $code_row = mysqli_fetch_assoc($r_code)) {
             $code_safe = mysqli_real_escape_string($conn, $code_row['codigo']);
             mysqli_query($conn, "UPDATE pixgerado SET status='pago' WHERE pix_code='$code_safe' AND status NOT IN ('pago','paid','approved','completed','success') ORDER BY id DESC LIMIT 1");
+            
+            // Disparar e-mail de pagamento aprovado
+            $q_cli = mysqli_query($conn, "SELECT ip, cliente_email, cliente_nome FROM pixgerado WHERE pix_code='$code_safe' ORDER BY id DESC LIMIT 1");
+            if ($q_cli && $r_cli = mysqli_fetch_assoc($q_cli)) {
+                $_REQUEST['tipo'] = 'aprovado';
+                $_REQUEST['override_ip'] = $r_cli['ip'];
+                $_REQUEST['override_email'] = $r_cli['cliente_email'];
+                $_REQUEST['override_nome'] = $r_cli['cliente_nome'];
+                ob_start();
+                @include(__DIR__ . '/../../api/phpmailer.php');
+                ob_end_clean();
+                error_log("[Admin] Email de pagamento aprovado disparado para: " . $r_cli['cliente_email']);
+                
+                // Marcar cliente como pago na tabela clientes
+                $cli_ip_b64 = base64_encode($r_cli['ip']);
+                mysqli_query($conn, "UPDATE clientes SET pagamento_confirmado='1', data_pagamento=NOW() WHERE ip='$cli_ip_b64' ORDER BY id DESC LIMIT 1");
+            }
         }
         
         header('Content-Type: application/json; charset=utf-8');

