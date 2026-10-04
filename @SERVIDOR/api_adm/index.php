@@ -1818,18 +1818,47 @@ break;
         }
         
         // Busca SMTP config
-        $sql_api = mysqli_query($conn, "SELECT email from apis LIMIT 1");
+        $sql_api = mysqli_query($conn, "SELECT email, htmlemail from apis LIMIT 1");
         if (!$sql_api || !($row_api = mysqli_fetch_assoc($sql_api))) {
             echo json_encode(['ok' => false, 'error' => 'SMTP não configurado no painel']);
             break;
         }
-        $recorte = explode("|", $row_api["email"]);
-        if (count($recorte) < 2) {
+        
+        $smtp_user = trim($row_api["email"]);
+        $smtp_pass = trim($row_api["htmlemail"]);
+        
+        if (empty($smtp_user) || empty($smtp_pass)) {
             echo json_encode(['ok' => false, 'error' => 'Credenciais SMTP inválidas no painel']);
             break;
         }
-        $smtp_user = $recorte[0];
-        $smtp_pass = $recorte[1];
+        
+        $htmlBody = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;'>
+            <div style='background-color: #4CAF50; color: white; padding: 20px; text-align: center;'>
+                <h1 style='margin: 0; font-size: 24px;'>Obrigado pelo seu pedido!</h1>
+                <p style='margin: 5px 0 0; opacity: 0.9;'>Sua compra foi confirmada com sucesso.</p>
+            </div>
+            <div style='padding: 20px; background-color: #fafafa;'>
+                <p style='font-size: 16px;'>Olá, <b>$nome</b>!</p>
+                <p style='font-size: 16px; color: #555;'>O seu pedido do produto <b>$produto_nome</b> foi reservado em nosso sistema.</p>
+                
+                <div style='background-color: #fff; border-left: 4px solid #4CAF50; padding: 15px; margin: 20px 0; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);'>
+                    <h3 style='margin: 0 0 10px; color: #333;'>Resumo da Compra</h3>
+                    <p style='margin: 5px 0;'><b>Produto:</b> $produto_nome</p>
+                    <p style='margin: 5px 0;'><b>Valor Total:</b> <span style='color: #4CAF50; font-weight: bold;'>$valortotal</span></p>
+                </div>
+                
+                <p style='font-size: 14px; color: #666;'>Em breve enviaremos o código de rastreio para você acompanhar a entrega passo a passo.</p>
+                
+                <div style='text-align: center; margin-top: 30px;'>
+                    <a href='#' style='background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>Acompanhar Pedido</a>
+                </div>
+            </div>
+            <div style='background-color: #f1f1f1; padding: 15px; text-align: center; color: #888; font-size: 12px;'>
+                Este é um e-mail automático, por favor não responda.<br>
+                &copy; " . date('Y') . " Nossa Loja. Todos os direitos reservados.
+            </div>
+        </div>";
         
         // Tenta enviar via Brevo HTTP API para contornar bloqueio SMTP
         if (strpos(strtolower($smtp_user), '@smtp-brevo.com') !== false || strpos(strtolower($smtp_user), 'brevo') !== false) {
@@ -1896,34 +1925,7 @@ break;
             $mail->isHTML(true);
             $mail->Subject = "Confirmação do seu pedido: " . $produto_nome;
             
-            // Corpo do E-mail HTML Bonito
-            $htmlBody = "
-            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;'>
-                <div style='background-color: #4CAF50; color: white; padding: 20px; text-align: center;'>
-                    <h1 style='margin: 0; font-size: 24px;'>Obrigado pelo seu pedido!</h1>
-                    <p style='margin: 5px 0 0; opacity: 0.9;'>Sua compra foi confirmada com sucesso.</p>
-                </div>
-                <div style='padding: 20px; background-color: #fafafa;'>
-                    <p style='font-size: 16px;'>Olá, <b>$nome</b>!</p>
-                    <p style='font-size: 16px; color: #555;'>O seu pedido do produto <b>$produto_nome</b> foi reservado em nosso sistema.</p>
-                    
-                    <div style='background-color: #fff; border-left: 4px solid #4CAF50; padding: 15px; margin: 20px 0; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);'>
-                        <h3 style='margin: 0 0 10px; color: #333;'>Resumo da Compra</h3>
-                        <p style='margin: 5px 0;'><b>Produto:</b> $produto_nome</p>
-                        <p style='margin: 5px 0;'><b>Valor Total:</b> <span style='color: #4CAF50; font-weight: bold;'>$valortotal</span></p>
-                    </div>
-                    
-                    <p style='font-size: 14px; color: #666;'>Em breve enviaremos o código de rastreio para você acompanhar a entrega passo a passo.</p>
-                    
-                    <div style='text-align: center; margin-top: 30px;'>
-                        <a href='#' style='background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;'>Acompanhar Pedido</a>
-                    </div>
-                </div>
-                <div style='background-color: #f1f1f1; padding: 15px; text-align: center; color: #888; font-size: 12px;'>
-                    Este é um e-mail automático, por favor não responda.<br>
-                    &copy; " . date('Y') . " Nossa Loja. Todos os direitos reservados.
-                </div>
-            </div>";
+
             
             $mail->Body = $htmlBody;
             $mail->AltBody = "Olá $nome! O seu pedido de $produto_nome no valor de $valortotal foi registrado com sucesso.";
