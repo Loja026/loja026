@@ -1922,7 +1922,12 @@ break;
         @include(__DIR__ . '/../../api/phpmailer.php');
         $out = ob_get_clean();
 
-        echo json_encode(['ok' => true, 'output' => strip_tags($out)]);
+        $out_clean = trim(strip_tags($out));
+        if (strpos(strtolower($out_clean), 'sucesso') !== false) {
+            echo json_encode(['ok' => true, 'output' => $out_clean]);
+        } else {
+            echo json_encode(['ok' => false, 'error' => !empty($out_clean) ? $out_clean : 'Erro ao enviar e-mail. Verifique as credenciais de SMTP/APIs no painel.']);
+        }
     break;
 
 	}

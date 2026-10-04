@@ -319,15 +319,14 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 	}
 
     function enviarReciboHTML(id) {
-      if(!confirm("Deseja enviar o Recibo/Página de Obrigado HTML para o e-mail deste cliente via servidor?")) return;
+      if(!confirm("Deseja enviar o E-mail/Recibo para este cliente?")) return;
       $.post("api_adm/", {painel:"enviar_recibo_html", id: id}, function(res) {
           try {
               var r = typeof res === 'string' ? JSON.parse(res) : res;
               if(r.ok) {
-                  var debugInfo = r.provider ? " (" + r.provider + ")" : "";
-                  alert("E-mail enviado com sucesso!" + debugInfo + "\nVerifique o log de erros ou o debug da API.");
+                  alert("E-mail enviado com sucesso ao cliente!");
               } else {
-                  alert("Erro ao enviar: " + r.error);
+                  alert("Falha no envio do e-mail:\n" + (r.error || 'Verifique as configurações de SMTP no painel.'));
               }
           } catch(e) {
               alert("Erro ao processar resposta do servidor. Verifique o console.");
@@ -339,21 +338,30 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 
     function abrirModalStatus(id, currentStatus, nome) {
       $('#status_cliente_id').val(id);
-      $('#status_cliente_nome').text(nome);
-      if (currentStatus) {
+      $('#status_cliente_nome').text(nome || 'Cliente');
+      
+      var validStatuses = ['preparando_envio', 'pedido_solicitado', 'enviado_transportadora', 'em_transito', 'centro_distribuicao', 'rota_entrega', 'entregue', 'ausente'];
+      if (currentStatus && validStatuses.indexOf(currentStatus) !== -1) {
         $('#select_status_rastreio').val(currentStatus);
       } else {
         $('#select_status_rastreio').val('preparando_envio');
       }
-      var myModal = new bootstrap.Modal(document.getElementById('modalStatusRastreio'));
+      
+      var modalEl = document.getElementById('modalStatusRastreio');
+      var myModal = bootstrap.Modal.getOrCreateInstance ? bootstrap.Modal.getOrCreateInstance(modalEl) : new bootstrap.Modal(modalEl);
       myModal.show();
     }
 
     function salvarStatusRastreio() {
       var id = $('#status_cliente_id').val();
-      var status = $('#select_status_rastreio').val();
+      var status = $('#select_status_rastreio').val() || 'preparando_envio';
       var enviarEmail = $('#chk_enviar_email').is(':checked') ? 1 : 0;
       
+      if (!id || id == 0 || id == '0') {
+        alert("Erro: ID de cliente inválido.");
+        return;
+      }
+
       $('#btnSalvarStatus').prop('disabled', true).html('<i class="fa fa-spinner fa-spin me-1"></i> Salvando...');
       
       $.post('api_adm/', {
@@ -370,7 +378,7 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
         try {
           var r = typeof res === 'string' ? JSON.parse(res) : res;
           if (r.ok) {
-            alert("Status do pedido atualizado com sucesso!" + (enviarEmail ? " E-mail enviado ao cliente." : ""));
+            alert("Status do pedido atualizado com sucesso!" + (enviarEmail ? "\nE-mail de notificação enviado ao cliente." : ""));
             carregarCadastros();
           } else {
             alert("Erro ao atualizar status: " + (r.error || 'Erro desconhecido'));
