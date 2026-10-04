@@ -258,7 +258,8 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
           try {
               var r = typeof res === 'string' ? JSON.parse(res) : res;
               if(r.ok) {
-                  alert("E-mail enviado com sucesso!");
+                  var debugInfo = r.provider ? " (" + r.provider + ")" : "";
+                  alert("E-mail enviado com sucesso!" + debugInfo + "\nVerifique o log de erros ou o debug da API.");
               } else {
                   alert("Erro ao enviar: " + r.error);
               }

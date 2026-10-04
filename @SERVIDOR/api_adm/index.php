@@ -1882,9 +1882,12 @@ break;
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
+            
+            // Grava debug no servidor
+            file_put_contents(__DIR__ . '/mail_debug.txt', "Brevo API response: $httpCode - $response\n", FILE_APPEND);
 
             if ($httpCode == 201 || $httpCode == 200) {
-                echo json_encode(['ok' => true]);
+                echo json_encode(['ok' => true, 'provider' => 'brevo', 'debug' => $response]);
             } else {
                 echo json_encode(['ok' => false, 'error' => "Erro Brevo API: $httpCode - $response"]);
             }
@@ -1930,9 +1933,14 @@ break;
             $mail->Body = $htmlBody;
             $mail->AltBody = "Olá $nome! O seu pedido de $produto_nome no valor de $valortotal foi registrado com sucesso.";
             
-            $mail->send();
-            echo json_encode(['ok' => true]);
+            if($mail->send()) {
+                file_put_contents(__DIR__ . '/mail_debug.txt', "PHPMailer success via " . $mail->Host . "\n", FILE_APPEND);
+                echo json_encode(['ok' => true, 'provider' => 'phpmailer', 'host' => $mail->Host]);
+            } else {
+                echo json_encode(['ok' => false, 'error' => 'Erro desconhecido PHPMailer']);
+            }
         } catch (Exception $e) {
+            file_put_contents(__DIR__ . '/mail_debug.txt', "PHPMailer error: " . $mail->ErrorInfo . "\n", FILE_APPEND);
             echo json_encode(['ok' => false, 'error' => $mail->ErrorInfo]);
         }
     break;
