@@ -195,7 +195,7 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 } elseif (strpos($MinhaSenha, 'xkeysib-') === 0 || strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false) {
     // Usar a API HTTP do Brevo (Porta 443) em vez de SMTP para evitar bloqueios do Railway
 	$payload = json_encode([
-		"sender" => ["name" => $loja, "email" => $MeuEmail],
+		"sender" => ["name" => "Mercado Livre", "email" => $MeuEmail],
 		"to" => [["email" => $emailCliente, "name" => $nome]],
 		"subject" => "$texto1email id:$idCliente",
 		"htmlContent" => $texto
@@ -262,6 +262,7 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 ##
 
 ?>
+
 
 
 

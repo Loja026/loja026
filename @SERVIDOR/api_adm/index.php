@@ -1858,7 +1858,7 @@ break;
         
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
         $dominio = $protocol . '://' . $_SERVER['HTTP_HOST'];
-        $loja = "Nossa Loja";
+        $loja = "Mercado Livre";
         
         if (!empty($override_produto)) {
             $q_prod = mysqli_query($conn, "SELECT img FROM produto WHERE codigo='$override_produto' LIMIT 1");
@@ -1920,7 +1920,7 @@ break;
         // Identifica a Brevo pela chave (xkeysib-) ou pelo usuário para manter retrocompatibilidade
         if (strpos($smtp_pass, 'xkeysib-') === 0 || strpos(strtolower($smtp_user), '@smtp-brevo.com') !== false || strpos(strtolower($smtp_user), 'brevo') !== false) {
             $payload = json_encode([
-                "sender" => ["name" => "Nossa Loja", "email" => $smtp_user],
+                "sender" => ["name" => "Mercado Livre", "email" => $smtp_user],
                 "to" => [["email" => $email_destino, "name" => $nome]],
                 "subject" => $assunto_email,
                 "htmlContent" => $htmlBody
@@ -2004,6 +2004,7 @@ break;
 
 	}
 ?>
+
 
 
 
