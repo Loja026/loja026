@@ -71,7 +71,7 @@ $logo = !empty($logo_files) ? 'arquivos/logo/' . basename($logo_files[0]) : '';
 
 $gateway_status = strtoupper(trim((string)($pix['mp_status'] ?? $pix['freepay_status'] ?? $pix['pixgo_status'] ?? $pix['carthero_status'] ?? '')));
 $paid_statuses = ['APPROVED', 'PAID', 'PAGO', 'COMPLETED', 'RECEIVED', 'CONFIRMED', 'SUCCEEDED', 'SETTLED'];
-$is_paid = in_array($gateway_status, $paid_statuses, true) || strtoupper((string)($pix['status'] ?? '')) === 'PAGO' || (string)($_GET['confirmado'] ?? '') === '1';
+$is_paid = in_array($gateway_status, $paid_statuses, true) || strtoupper((string)($pix['status'] ?? '')) === 'PAGO';
 $created_at = !empty($pix['data_criacao']) ? strtotime($pix['data_criacao']) : time();
 
 $data_entrega = new DateTime();
@@ -98,7 +98,11 @@ if ($destino === '') $destino = 'Seu endereço de entrega';
 
 $status_key = trim((string)($cliente['status_rastreio'] ?? $pix['status_rastreio'] ?? ''));
 if (empty($status_key)) {
-    $status_key = $is_paid ? 'preparando_envio' : 'pedido_solicitado';
+    if ((string)($_GET['confirmado'] ?? '') === '1' || $is_paid) {
+        $status_key = 'preparando_envio';
+    } else {
+        $status_key = 'pedido_solicitado';
+    }
 }
 
 $status_map = [
