@@ -193,6 +193,9 @@ $colunas_por_tabela = [
     ],
     'produto' => [
         'force_tabela_pix' => "TINYINT(1) DEFAULT 0"
+    ],
+    'apis' => [
+        'smtp_ativo' => "TINYINT(1) DEFAULT 0"
     ]
 ];
 

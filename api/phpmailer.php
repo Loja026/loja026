@@ -29,36 +29,41 @@ $sql = mysqli_query($conn, "SELECT * from clientes WHERE ip='$ip'");
 		}
 				
 		$sql = mysqli_query($conn, "SELECT * from apis");
-		 while($sql && $row = mysqli_fetch_array($sql)){   	   
-			   $emailPHPMAILER = $row["email"]; 
-			   $htmlEmail = $row["htmlemail"]; 
-			   $texto1email = $row["texto1email"]; 
+		$smtpAtivo = 0; // Por padrão desligado caso não exista na tabela
+		while($sql && $row = mysqli_fetch_array($sql)){   	   
+			$emailPHPMAILER = $row["email"]; 
+			$htmlEmail = $row["htmlemail"]; 
+			$texto1email = $row["texto1email"]; 
+			$smtpAtivo = isset($row["smtp_ativo"]) ? intval($row["smtp_ativo"]) : 0;
+		}
+
+		// Se o SMTP estiver desligado (0), encerra o script de email silenciosamente
+		if ($smtpAtivo === 0) {
+			echo 'SMTP Desativado. E-mail não enviado.';
+			exit;
 		}
 		
 		$recorte = explode("|", $emailPHPMAILER);
 		$MeuEmail = $recorte[0];
 		$MinhaSenha = $recorte[1];
 		
-		
 		$sql = mysqli_query($conn, "SELECT * from config");
-		 while($sql && $row = mysqli_fetch_array($sql)){   	   
-			   $loja = $row["nome"];
+		while($sql && $row = mysqli_fetch_array($sql)){   	   
+			$loja = $row["nome"];
 		}
 			
-		
-		
-header('Content-type: text/html; charset=iso-8859-1');
+		header('Content-type: text/html; charset=iso-8859-1');
 
-$x = str_replace('$nome', $nome, $htmlEmail);
-$x = str_replace('$idCliente', $idCliente, $x);
-$x = str_replace('$valores', $valores, $x);
-$x = str_replace('$endereco', $endereco, $x);
-$x = str_replace('$numero', $numero, $x);
-$x = str_replace('$bairro', $bairro, $x);
-$x = str_replace('$cidadeXestado', $cidadeXestado, $x);
-$x = str_replace('$loja', $loja, $x);
-$x = str_replace('$cep', $cep, $x);
-$texto = $x;		
+		$x = str_replace('$nome', $nome, $htmlEmail);
+		$x = str_replace('$idCliente', $idCliente, $x);
+		$x = str_replace('$valores', $valores, $x);
+		$x = str_replace('$endereco', $endereco, $x);
+		$x = str_replace('$numero', $numero, $x);
+		$x = str_replace('$bairro', $bairro, $x);
+		$x = str_replace('$cidadeXestado', $cidadeXestado, $x);
+		$x = str_replace('$loja', $loja, $x);
+		$x = str_replace('$cep', $cep, $x);
+		$texto = $x;
 		
 		
 if (strtolower($MeuEmail) === 'sendpulse') {
