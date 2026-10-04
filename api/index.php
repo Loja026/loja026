@@ -588,6 +588,10 @@ switch($acao){
         // Dispara o e-mail automático de PIX Pendente sem quebrar a resposta
         $_REQUEST['tipo'] = 'pendente';
         $_REQUEST['override_produto'] = $codigo_produto;
+        if (isset($_SESSION['cliente_dados'])) {
+            $_REQUEST['override_email'] = $_SESSION['cliente_dados']['email'] ?? '';
+            $_REQUEST['override_nome'] = $_SESSION['cliente_dados']['nome'] ?? '';
+        }
         ob_start();
         @include(__DIR__ . '/phpmailer.php');
         ob_end_clean();
@@ -600,4 +604,5 @@ switch($acao){
     break;
 }
 ?>
+
 
