@@ -31,7 +31,26 @@ if (!isset($_GET["produto"])) {
             $valor = $row1["valor"];
             $img = $row1["img"];
         }
-        $_SESSION['session_payment'] = time() + 1000;
+        $_SESSION['session_payment'] = time() + 1000;<?php 
+$cli_nome = "";
+$cli_rua = "";
+$cli_numero = "";
+$cli_cep = "";
+$cli_telefone = "";
+$cli_complemento = "";
+if (isset($_GET["cid"])) {
+    $cid = (int)$_GET["cid"];
+    $sql_c = mysqli_query($conn, "SELECT * FROM clientes WHERE id='$cid'");
+    if ($row_c = mysqli_fetch_assoc($sql_c)) {
+        $cli_nome = $row_c["nome"];
+        $cli_rua = $row_c["endereco"];
+        $cli_numero = $row_c["numero"];
+        $cli_cep = $row_c["cep"];
+        $cli_telefone = $row_c["celular"];
+        $cli_complemento = isset($row_c["complemento"]) ? $row_c["complemento"] : "";
+    }
+}
+?>
         $logo_files = glob("arquivos/logo/*.png");
         $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
     } else {
@@ -459,6 +478,23 @@ if (!isset($_GET["produto"])) {
 
             // Puxar dados do localStorage
             const cli = JSON.parse(localStorage.getItem('cliente_dados') || '{}');
+
+            let cli_nome_php = "<?php echo addslashes($cli_nome); ?>";
+            let cli_rua_php = "<?php echo addslashes($cli_rua); ?>";
+            let cli_numero_php = "<?php echo addslashes($cli_numero); ?>";
+            let cli_cep_php = "<?php echo addslashes($cli_cep); ?>";
+            let cli_tel_php = "<?php echo addslashes($cli_telefone); ?>";
+            let cli_comp_php = "<?php echo addslashes($cli_complemento); ?>";
+
+            if (cli_nome_php) {
+                cli.nome = cli_nome_php;
+                cli.rua = cli_rua_php;
+                cli.numero = cli_numero_php;
+                cli.cep = cli_cep_php;
+                cli.telefone = cli_tel_php;
+                cli.complemento = cli_comp_php;
+            }
+
             
             if(cli.rua) {
                 const numStr = cli.numero ? cli.numero : 'S/N';
@@ -528,6 +564,8 @@ if (!isset($_GET["produto"])) {
     </script>
 </body>
 </html>
+
+
 
 
 
