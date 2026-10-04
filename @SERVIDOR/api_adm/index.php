@@ -1864,7 +1864,7 @@ break;
             $q_prod = mysqli_query($conn, "SELECT img FROM produto WHERE codigo='$override_produto' LIMIT 1");
             if ($q_prod && $r_prod = mysqli_fetch_assoc($q_prod)) {
                 $prod_img = (strpos($r_prod['img'], 'http') === 0) ? $r_prod['img'] : $dominio . "/arquivos/produtos/" . $override_produto . "/" . $r_prod['img'];
-                $produto_html = "<div style='text-align: center; margin: 20px 0; border: 1px solid #eee; padding: 15px; border-radius: 8px; background-color: #fff;'><img src='$prod_img' alt='$produto_nome' style='max-width: 150px; border-radius: 5px; margin-bottom: 10px;' /><h3 style='margin: 0; color: #333; font-size: 16px;'>$produto_nome</h3></div>";
+                $produto_html = "<div style='text-align: center; margin: 20px 0; border: 1px solid #eee; padding: 15px; border-radius: 8px; background-color: #fff;'><h3 style='margin: 0; color: #333; font-size: 16px;'>$produto_nome</h3></div>";
             } else {
                 $produto_html = "";
             }
@@ -2004,6 +2004,7 @@ break;
 
 	}
 ?>
+
 
 
 

@@ -116,7 +116,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 					
 					$produto_html = "
 					<div style='text-align: center; margin: 20px 0; border: 1px solid #eee; padding: 15px; border-radius: 8px; background-color: #fff;'>
-						<img src='$prod_img' alt='$prod_nome' style='max-width: 150px; border-radius: 5px; margin-bottom: 10px;' />
+						
 						<h3 style='margin: 0; color: #333; font-size: 16px;'>$prod_nome</h3>
 					</div>";
 					
@@ -262,6 +262,7 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 ##
 
 ?>
+
 
 
 
