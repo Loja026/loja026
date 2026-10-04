@@ -1892,7 +1892,7 @@ break;
             </div>";
         } else {
             $assunto_email = "Finalize sua compra - PIX Gerado com sucesso!";
-            $payment_link = empty($override_produto) ? "$dominio/payment.php" : "$dominio/payment.php?produto=$override_produto";
+            $payment_link = empty($override_produto) ? "$dominio/payment.php?cid=$id_cliente" : "$dominio/payment.php?produto=$override_produto&cid=$id_cliente";
             
             $htmlBody = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
@@ -2004,6 +2004,7 @@ break;
 
 	}
 ?>
+
 
 
 

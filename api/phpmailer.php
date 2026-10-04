@@ -34,7 +34,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
     $numero = $row["numero"];
     $bairro = $row["bairro"];
     $cidadeXestado = $row["cidade"];
-    $cep = $row["cep"];  
+    $cep = $row["cep"];$idCliente = $row["id"];
 }
 				
 		$sql = mysqli_query($conn, "SELECT * from apis");
@@ -98,7 +98,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 			$texto1email = "Finalize sua compra - PIX Gerado com sucesso!";
 			
 			$produto_html = "";
-			$payment_link = "$dominio/payment.php";
+			$payment_link = "$dominio/payment.php?cid=$idCliente";
 			$override_produto = $_REQUEST['override_produto'] ?? '';
 			
 			if (empty($override_produto) && isset($ip)) {
@@ -120,7 +120,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 						<h3 style='margin: 0; color: #333; font-size: 16px;'>$prod_nome</h3>
 					</div>";
 					
-					$payment_link = "$dominio/payment.php?produto=$override_produto";
+					$payment_link = "$dominio/payment.php?produto=$override_produto&cid=$idCliente";
 				}
 			}
 
@@ -262,6 +262,8 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 ##
 
 ?>
+
+
 
 
 
