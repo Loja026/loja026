@@ -102,7 +102,13 @@ $destino = trim((string)($cliente['cidade'] ?? ''));
 if (!empty($cliente['estado'])) $destino .= ($destino ? ', ' : '') . $cliente['estado'];
 if ($destino === '') $destino = 'Seu endereço de entrega';
 
-$status_key = trim((string)($cliente['status_rastreio'] ?? $pix['status_rastreio'] ?? ''));
+$status_key = '';
+if (!empty($cliente['status_rastreio'])) {
+    $status_key = trim((string)$cliente['status_rastreio']);
+} elseif (!empty($pix['status_rastreio'])) {
+    $status_key = trim((string)$pix['status_rastreio']);
+}
+
 if (empty($status_key)) {
     if ((string)($_GET['confirmado'] ?? '') === '1' || $is_paid) {
         $status_key = 'preparando_envio';
