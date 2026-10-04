@@ -1893,198 +1893,36 @@ break;
         }
         
         $nome = htmlspecialchars($cliente['nome']);
-        $produto_nome = htmlspecialchars($cliente['produto_nome'] ?? 'Produto');
-        $valortotal = $cliente['valortotal'] ?? '0.00';
-        if (is_numeric($valortotal)) {
-            $valortotal = "R$ " . number_format((float)$valortotal, 2, ',', '.');
-        }
+        $override_produto = $cliente['produto_codigo'] ?? '';
+        $is_paid = !empty($cliente['pagamento_confirmado']);
         
-        // Busca SMTP config
-        $sql_api = mysqli_query($conn, "SELECT email from apis LIMIT 1");
-        if (!$sql_api || !($row_api = mysqli_fetch_assoc($sql_api))) {
-            echo json_encode(['ok' => false, 'error' => 'SMTP não configurado no painel']);
-            break;
-        }
-        
-        $recorte = explode("|", $row_api["email"] ?? '');
-        if (count($recorte) < 2) {
-            echo json_encode(['ok' => false, 'error' => 'Credenciais SMTP inválidas no painel']);
-            break;
-        }
-        $smtp_user = trim($recorte[0]);
-        $smtp_pass = trim($recorte[1]);
-        
-        // Determina o status do pedido para enviar o template correto
-        $ip_raw = $cliente['ip'] ?? '';
-        $status_pagamento = 'pendente';
-        $override_produto = '';
-        if (!empty($cliente['pagamento_confirmado'])) {
-            $status_pagamento = 'approved';
-        }
-        
-        if (!empty($ip_raw)) {
-            $ip_decoded = base64_decode($ip_raw);
-            if ($ip_decoded !== false && $ip_decoded !== '') {
-                $ip_raw = $ip_decoded;
-            }
-            $q_pix = mysqli_query($conn, "SELECT produto, status, mp_status, pixgo_status, freepay_status FROM pixgerado WHERE ip='$ip_raw' ORDER BY id DESC LIMIT 1");
-            if ($q_pix && $r_pix = mysqli_fetch_assoc($q_pix)) {
-                $override_produto = $r_pix['produto'];
-                $pago_arrays = ['pago', 'paid', 'approved', 'approved_payment', 'completed', 'success'];
-                
-                if (in_array(strtolower($r_pix['status'] ?? ''), $pago_arrays) || 
-                    in_array(strtolower($r_pix['mp_status'] ?? ''), $pago_arrays) || 
-                    in_array(strtolower($r_pix['pixgo_status'] ?? ''), $pago_arrays) || 
-                    in_array(strtolower($r_pix['freepay_status'] ?? ''), $pago_arrays)) {
-                    $status_pagamento = 'approved';
+        if (!$is_paid && !empty($cliente['ip'])) {
+            $ip_raw = base64_decode($cliente['ip']);
+            if ($ip_raw !== false && $ip_raw !== '') {
+                $q_pix = mysqli_query($conn, "SELECT status, mp_status, pixgo_status, freepay_status FROM pixgerado WHERE ip='$ip_raw' ORDER BY id DESC LIMIT 1");
+                if ($q_pix && $r_pix = mysqli_fetch_assoc($q_pix)) {
+                    $pago_arrays = ['pago', 'paid', 'approved', 'approved_payment', 'completed', 'success'];
+                    if (in_array(strtolower($r_pix['status'] ?? ''), $pago_arrays) || 
+                        in_array(strtolower($r_pix['mp_status'] ?? ''), $pago_arrays) || 
+                        in_array(strtolower($r_pix['pixgo_status'] ?? ''), $pago_arrays) || 
+                        in_array(strtolower($r_pix['freepay_status'] ?? ''), $pago_arrays)) {
+                        $is_paid = true;
+                    }
                 }
             }
         }
-        
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        $dominio = $protocol . '://' . $_SERVER['HTTP_HOST'];
-        $loja = "Mercado Livre";
-        
-        if (!empty($override_produto)) {
-            $q_prod = mysqli_query($conn, "SELECT img FROM produto WHERE codigo='$override_produto' LIMIT 1");
-            if ($q_prod && $r_prod = mysqli_fetch_assoc($q_prod)) {
-                $prod_img = (strpos($r_prod['img'], 'http') === 0) ? $r_prod['img'] : $dominio . "/arquivos/produtos/" . $override_produto . "/" . $r_prod['img'];
-                $produto_html = "<div style='text-align: center; margin: 20px 0; border: 1px solid #eee; padding: 15px; border-radius: 8px; background-color: #fff;'><h3 style='margin: 0; color: #333; font-size: 16px;'>$produto_nome</h3></div>";
-            } else {
-                $produto_html = "";
-            }
-        } else {
-            $produto_html = "";
-        }
-        
-        if ($status_pagamento === 'approved') {
-            $assunto_email = "Pagamento Aprovado - Seu pedido está sendo preparado!";
-            $htmlBody = "
-            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
-                <div style='background-color: #28a745; padding: 25px; text-align: center;'>
-                    <h1 style='color: white; margin: 0; font-size: 24px;'>Pagamento Aprovado! ✅</h1>
-                </div>
-                <div style='padding: 30px; color: #333; line-height: 1.6;'>
-                    <p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
-                    <p style='font-size: 16px;'>Recebemos o seu pagamento com sucesso referente ao produto <b>$produto_nome</b>. O seu pedido já está separado e começará a ser preparado para o envio.</p>
-					$produto_html
-                    <p style='font-size: 16px;'>Agradecemos muito pela sua confiança e por comprar na <strong>$loja</strong>!</p>
-                    
-                    <div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
-                        <a href='$dominio/success.php' style='background-color: #28a745; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block;'>Acompanhar meu Pedido</a>
-                    </div>
-                </div>
-            </div>";
-        } else {
-            $assunto_email = "Finalize sua compra - PIX Gerado com sucesso!";
-            $payment_link = empty($override_produto) ? "$dominio/payment.php?cid=$id_cliente" : "$dominio/payment.php?produto=$override_produto&cid=$id_cliente";
-            
-            $htmlBody = "
-            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
-                <div style='background-color: #00a650; padding: 25px; text-align: center;'>
-                    <h1 style='color: white; margin: 0; font-size: 24px;'>Seu pedido foi reservado ⏳</h1>
-                </div>
-                <div style='padding: 30px; color: #333; line-height: 1.6;'>
-                    <p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
-                    <p style='font-size: 16px;'>Notamos que você iniciou uma compra do produto <b>$produto_nome</b> na <strong>$loja</strong>, mas ainda não identificamos o seu pagamento.</p>
-					$produto_html
-                    <p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, <strong>clique no botão abaixo para gerar um novo PIX</strong> e finalize seu pagamento e garantir sua reserva.</p>
-                    
-                    <div style='background-color: #fff3e0; border-left: 4px solid #00a650; padding: 15px; margin: 25px 0; border-radius: 0 6px 6px 0;'>
-                        <p style='margin: 0; font-size: 15px; color: #e65100;'><strong>Atenção:</strong> Estoque limitado. O seu produto só estará garantido após a confirmação do pagamento.</p>
-                    </div>
 
-                    <div style='text-align: center; margin-top: 35px; margin-bottom: 15px;'>
-                        <a href='$payment_link' style='background-color: #3483fa; color: white; padding: 16px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(52, 131, 250, 0.4);'>Gerar Novo PIX e Finalizar Compra</a>
-                    </div>
-                </div>
-            </div>";
-        }
-        
-        // Tenta enviar via Brevo HTTP API para contornar bloqueio SMTP
-        // Identifica a Brevo pela chave (xkeysib-) ou pelo usuário para manter retrocompatibilidade
-        if (strpos($smtp_pass, 'xkeysib-') === 0 || strpos(strtolower($smtp_user), '@smtp-brevo.com') !== false || strpos(strtolower($smtp_user), 'brevo') !== false) {
-            $payload = json_encode([
-                "sender" => ["name" => "Mercado Livre", "email" => $smtp_user],
-                "to" => [["email" => $email_destino, "name" => $nome]],
-                "subject" => $assunto_email,
-                "htmlContent" => $htmlBody
-            ]);
+        $_REQUEST['tipo'] = $is_paid ? 'aprovado' : 'pendente';
+        $_REQUEST['override_id'] = $id_cliente;
+        $_REQUEST['override_email'] = $email_destino;
+        $_REQUEST['override_nome'] = $nome;
+        $_REQUEST['override_produto'] = $override_produto;
 
-            $ch = curl_init('https://api.brevo.com/v3/smtp/email');
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'api-key: ' . $smtp_pass,
-                'accept: application/json'
-            ]);
+        ob_start();
+        @include(__DIR__ . '/../../api/phpmailer.php');
+        $out = ob_get_clean();
 
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            
-            // Grava debug no servidor
-            file_put_contents(__DIR__ . '/mail_debug.txt', "Brevo API response: $httpCode - $response\n", FILE_APPEND);
-
-            if ($httpCode == 201 || $httpCode == 200) {
-                echo json_encode(['ok' => true, 'provider' => 'brevo', 'debug' => $response]);
-            } else {
-                echo json_encode(['ok' => false, 'error' => "Erro Brevo API: $httpCode - $response"]);
-            }
-            break;
-        }
-
-        // Fallback para PHPMailer SMTP se não for Brevo
-        require_once(__DIR__ . '/../../api/src/PHPMailer.php');
-        require_once(__DIR__ . '/../../api/src/SMTP.php');
-        require_once(__DIR__ . '/../../api/src/Exception.php');
-        
-        $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            
-            // Verifica se é Gmail
-            if (strpos(strtolower($smtp_user), '@gmail.com') !== false) {
-                $mail->Host = 'smtp.gmail.com';
-                $mail->Username = $smtp_user;
-                $mail->Password = $smtp_pass;
-                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-            } else {
-                // Default para Resend
-                $mail->Host = 'smtp.resend.com';
-                $mail->Username = 'resend';
-                $mail->Password = $smtp_pass;
-                $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
-                $mail->Port = 465;
-            }
-            
-            $mail->SMTPAuth = true;
-            $mail->CharSet = 'UTF-8';
-            
-            $mail->setFrom($smtp_user, 'Nossa Loja');
-            $mail->addAddress($email_destino, $nome);
-            
-            $mail->isHTML(true);
-            $mail->Subject = $assunto_email;
-            
-
-            
-            $mail->Body = $htmlBody;
-            $mail->AltBody = "Olá $nome! O seu pedido de $produto_nome no valor de $valortotal foi registrado com sucesso.";
-            
-            if($mail->send()) {
-                file_put_contents(__DIR__ . '/mail_debug.txt', "PHPMailer success via " . $mail->Host . "\n", FILE_APPEND);
-                echo json_encode(['ok' => true, 'provider' => 'phpmailer', 'host' => $mail->Host]);
-            } else {
-                echo json_encode(['ok' => false, 'error' => 'Erro desconhecido PHPMailer']);
-            }
-        } catch (Exception $e) {
-            file_put_contents(__DIR__ . '/mail_debug.txt', "PHPMailer error: " . $mail->ErrorInfo . "\n", FILE_APPEND);
-            echo json_encode(['ok' => false, 'error' => $mail->ErrorInfo]);
-        }
+        echo json_encode(['ok' => true, 'output' => strip_tags($out)]);
     break;
 
 	}
