@@ -651,7 +651,7 @@ switch($acao){
 					
 					if ($is_order_paid) {
 						$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-success mt-1" title="Pago" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:4px;"><i class="material-icons" style="font-size:12px;">check_circle</i> Pago</span>';
-						$btn_status_rastreio = '<button type="button" class="btn btn-sm bg-gradient-info mb-0 px-2 py-1 text-xs font-weight-bold mt-1 d-inline-flex align-items-center gap-1" onclick="abrirModalStatus('.$id.', \''.addslashes($status_rastreio_atual).'\', \''.addslashes($nome).'\')" title="Atualizar Status do Rastreio"><i class="material-icons" style="font-size:14px;">local_shipping</i> Atualizar Status</button>';
+						$btn_status_rastreio = '<button type="button" class="btn btn-sm bg-gradient-info mb-0 px-2 py-1 text-xs font-weight-bold mt-1 d-inline-flex align-items-center gap-1" style="white-space:nowrap;" onclick="abrirModalStatus('.$id.', \''.addslashes($status_rastreio_atual).'\', \''.addslashes($nome).'\')" title="Atualizar Status do Rastreio"><i class="material-icons" style="font-size:14px;">local_shipping</i> Status Rastreio</button>';
 					} else {
 						$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-warning mt-1" title="Reservado / Aguardando" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:4px;"><i class="material-icons" style="font-size:12px;">schedule</i> Reservado</span>';
 					}

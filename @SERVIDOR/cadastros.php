@@ -50,30 +50,39 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
       color: var(--text-muted);
       margin-top: 4px;
     }
-    /* Estilo para ajustar a tabela em qualquer tela */
+    /* Estilos de ajuste para evitar corte de tela e garantir rolagem responsiva */
+    .card {
+      overflow: hidden !important;
+    }
+    .table-responsive {
+      overflow-x: auto !important;
+      width: 100% !important;
+      display: block !important;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table {
+      min-width: 1250px !important;
+      width: 100% !important;
+    }
     .table td, .table th {
       white-space: normal !important;
       word-wrap: break-word !important;
       vertical-align: middle !important;
-      max-width: 250px;
     }
-    .table-responsive {
-      overflow-x: auto !important;
-      -webkit-overflow-scrolling: touch;
+    .card-header .bg-gradient-primary {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
     }
     @media (max-width: 991px) {
-      .table td, .table th {
-        min-width: 130px;
-        font-size: 0.78rem !important;
-      }
       .card-header .bg-gradient-primary {
         flex-direction: column;
         align-items: flex-start !important;
       }
       .card-header .d-flex.gap-2 {
         width: 100%;
-        justify-content: space-between;
-        margin-top: 10px;
+        justify-content: flex-start;
+        margin-top: 8px;
+        flex-wrap: wrap;
       }
     }
   </style>
@@ -142,7 +151,7 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
                   <h6 class="text-white text-capitalize mb-0"><i class="material-icons text-sm me-1">people_alt</i> Cadastros de Clientes & Remarketing (<b id="totaldecadastros">0</b>)</h6>
                   <p class="text-white text-xs mb-0 opacity-8">Lista de contatos e leads para recuperação de vendas</p>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                   <form method="POST" action="api_adm/" style="margin:0;">
                     <input type="hidden" name="painel" value="exportar_csv">
                     <button type="submit" class="btn btn-sm bg-gradient-success mb-0 d-flex align-items-center gap-1">
@@ -160,13 +169,13 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
                 <table class="table align-items-center mb-0">
                   <thead>
                     <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Cliente / Data</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email / CPF</th>
-					  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">WhatsApp / Telefone</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Endereço de Entrega</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Produto & Variações</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Quantidade / Total</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ações</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 150px;">Cliente / Data</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" style="min-width: 170px;">Email / CPF</th>
+					  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 180px;">WhatsApp / Telefone</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 220px;">Endereço de Entrega</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 220px;">Produto & Variações</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 120px;">Quantidade / Total</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 170px;">Ações</th>
                     </tr>
                   </thead>
                   <tbody id="lista_de_cadastro">
