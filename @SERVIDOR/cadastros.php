@@ -56,9 +56,11 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
     .table-responsive {
       overflow-x: auto !important;
       width: 100% !important;
+      display: block !important;
       -webkit-overflow-scrolling: touch;
     }
     .table {
+      min-width: 1050px;
       width: 100% !important;
       margin-bottom: 0;
     }
@@ -67,6 +69,10 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
       word-break: break-word !important;
       vertical-align: middle !important;
       padding: 10px 6px !important;
+    }
+    .modal-content {
+      border-radius: 12px !important;
+      overflow: hidden;
     }
   </style>
 
@@ -212,20 +218,26 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
   <!-- MODAL ATUALIZAR STATUS DE RASTREIO -->
   <div class="modal fade" id="modalStatusRastreio" tabindex="-1" aria-labelledby="modalStatusLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content bg-dark text-white border-0 shadow">
-        <div class="modal-header border-bottom border-secondary">
-          <h5 class="modal-title text-white d-flex align-items-center gap-2" id="modalStatusLabel">
-            <i class="material-icons text-info">local_shipping</i> Atualizar Status do Pedido
+      <div class="modal-content bg-dark text-white border-0 shadow-lg" style="border-radius:12px; overflow:hidden;">
+        <div class="modal-header border-bottom border-secondary d-flex align-items-center justify-content-between p-3" style="background:#1a1f36;">
+          <h5 class="modal-title text-white d-flex align-items-center gap-2 mb-0" id="modalStatusLabel" style="font-size:1.1rem; font-weight:700;">
+            <i class="material-icons text-info me-1" style="font-size:1.4rem; vertical-align:middle;">local_shipping</i>
+            <span>Atualizar Status do Pedido</span>
           </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn btn-sm btn-icon-only text-white mb-0" data-bs-dismiss="modal" aria-label="Close" style="background:rgba(255,255,255,0.15); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Fechar">
+            <i class="material-icons" style="font-size:18px; line-height:1;">close</i>
+          </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-4" style="background:#15192b;">
           <input type="hidden" id="status_cliente_id" value="">
-          <p class="text-sm text-secondary mb-3">Cliente: <strong id="status_cliente_nome" class="text-white"></strong></p>
+          <div class="p-3 mb-3 border-radius-lg" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
+            <span class="text-xs text-muted d-block mb-1">Cliente Selecionado:</span>
+            <strong id="status_cliente_nome" class="text-white text-base"></strong>
+          </div>
           
-          <div class="mb-3">
-            <label class="form-label text-white font-weight-bold">Selecione o Novo Status:</label>
-            <select id="select_status_rastreio" class="form-select text-white border-secondary p-2" style="border-radius:6px; color:#fff !important; background:#222 !important;">
+          <div class="mb-4">
+            <label class="form-label text-white font-weight-bold mb-2">Selecione o Novo Status:</label>
+            <select id="select_status_rastreio" class="form-select text-white p-3" style="border-radius:8px; color:#fff !important; background:#222a45 !important; border:1px solid rgba(255,255,255,0.2) !important; font-weight:600;">
               <option value="preparando_envio">1. Preparando envio</option>
               <option value="pedido_solicitado">2. Pedido solicitado</option>
               <option value="enviado_transportadora">3. Enviado para transportadora</option>
@@ -237,13 +249,13 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
             </select>
           </div>
 
-          <div class="form-check form-switch mb-2">
-            <input class="form-check-input" type="checkbox" id="chk_enviar_email" checked>
-            <label class="form-check-label text-white text-sm" for="chk_enviar_email">Enviar e-mail de notificação para o cliente</label>
+          <div class="form-check form-switch mb-2 d-flex align-items-center gap-2">
+            <input class="form-check-input" type="checkbox" id="chk_enviar_email" checked style="width:40px; height:20px; cursor:pointer;">
+            <label class="form-check-label text-white text-sm mb-0 cursor-pointer" for="chk_enviar_email">Enviar e-mail de notificação para o cliente</label>
           </div>
         </div>
-        <div class="modal-footer border-top border-secondary">
-          <button type="button" class="btn btn-secondary btn-sm mb-0" data-bs-dismiss="modal">Cancelar</button>
+        <div class="modal-footer border-top border-secondary p-3 d-flex align-items-center justify-content-end gap-2" style="background:#1a1f36;">
+          <button type="button" class="btn btn-outline-light btn-sm mb-0" data-bs-dismiss="modal"><i class="material-icons text-sm me-1">close</i> Fechar</button>
           <button type="button" onclick="salvarStatusRastreio()" id="btnSalvarStatus" class="btn bg-gradient-info btn-sm mb-0 d-flex align-items-center gap-1">
             <i class="material-icons text-sm">save</i> Salvar Status
           </button>
