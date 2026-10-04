@@ -50,40 +50,23 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
       color: var(--text-muted);
       margin-top: 4px;
     }
-    /* Estilos de ajuste para evitar corte de tela e garantir rolagem responsiva */
-    .card {
-      overflow: hidden !important;
+    .main-content {
+      overflow-x: hidden;
     }
     .table-responsive {
       overflow-x: auto !important;
       width: 100% !important;
-      display: block !important;
       -webkit-overflow-scrolling: touch;
     }
     .table {
-      min-width: 1250px !important;
       width: 100% !important;
+      margin-bottom: 0;
     }
     .table td, .table th {
       white-space: normal !important;
-      word-wrap: break-word !important;
+      word-break: break-word !important;
       vertical-align: middle !important;
-    }
-    .card-header .bg-gradient-primary {
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-    }
-    @media (max-width: 991px) {
-      .card-header .bg-gradient-primary {
-        flex-direction: column;
-        align-items: flex-start !important;
-      }
-      .card-header .d-flex.gap-2 {
-        width: 100%;
-        justify-content: flex-start;
-        margin-top: 8px;
-        flex-wrap: wrap;
-      }
+      padding: 10px 6px !important;
     }
   </style>
 
@@ -169,13 +152,13 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
                 <table class="table align-items-center mb-0">
                   <thead>
                     <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 150px;">Cliente / Data</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" style="min-width: 170px;">Email / CPF</th>
-					  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 180px;">WhatsApp / Telefone</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 220px;">Endereço de Entrega</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 220px;">Produto & Variações</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 120px;">Quantidade / Total</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="min-width: 170px;">Ações</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="width: 14%; min-width: 120px;">Cliente / Data</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" style="width: 15%; min-width: 130px;">Email / CPF</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width: 15%; min-width: 130px;">WhatsApp / Telefone</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width: 18%; min-width: 160px;">Endereço de Entrega</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width: 18%; min-width: 160px;">Produto & Variações</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width: 10%; min-width: 90px;">Qtd / Total</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width: 10%; min-width: 130px;">Ações</th>
                     </tr>
                   </thead>
                   <tbody id="lista_de_cadastro">

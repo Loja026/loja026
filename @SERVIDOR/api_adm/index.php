@@ -708,7 +708,7 @@ switch($acao){
 					$msg_zap = "Olá " . $rowx["nome"] . "! Tudo bem?\n\nVi que você iniciou o pedido do *" . $produto . "* (" . $valortotal . ") na nossa loja.\n\n👉 *Link do seu pedido:*\n" . $link_prod . "\n\nVocê ficou com alguma dúvida ou precisa de ajuda para concluir?\nEstamos à disposição!";
 					$msg_encoded = rawurlencode($msg_zap);
 					$zap_link = "https://wa.me/" . $zap_full . "?text=" . $msg_encoded;
-					$btn_whatsapp = '<a href="'.$zap_link.'" target="_blank" class="btn btn-sm bg-gradient-success mb-0 px-3 py-1 text-xs font-weight-bold" title="Chamar no WhatsApp"><i class="fab fa-whatsapp me-1" style="font-size:14px;"></i> WhatsApp</a>';
+					$btn_whatsapp = '<a href="'.$zap_link.'" target="_blank" class="btn btn-xs bg-gradient-success mb-1 px-2 py-1 text-xxs font-weight-bold" style="white-space:nowrap;" title="Chamar no WhatsApp"><i class="fab fa-whatsapp me-1" style="font-size:11px;"></i> WhatsApp</a>';
 				}
 
 				$btn_email = "";
@@ -717,10 +717,10 @@ switch($acao){
 					$msg_email_body = "Olá " . $rowx["nome"] . "!\n\nVi que você iniciou o pedido do " . $produto . " (" . $valortotal . ") na nossa loja e não concluiu.\n\nLink do seu pedido:\n" . $link_prod . "\n\nVocê ficou com alguma dúvida ou precisa de ajuda para concluir?\nEstamos à disposição!";
 					// Abre diretamente no Gmail pelo navegador (reconhece o email logado)
 					$email_link = "https://mail.google.com/mail/?view=cm&fs=1&to=" . urlencode($email) . "&su=" . rawurlencode("Seu pedido na nossa loja") . "&body=" . rawurlencode($msg_email_body);
-					$btn_email = '<a href="'.$email_link.'" target="_blank" class="btn btn-sm bg-gradient-info mb-0 px-3 py-1 text-xs font-weight-bold" title="Enviar E-mail via Gmail"><i class="material-icons text-sm" style="vertical-align: middle;">email</i> Gmail</a>';
+					$btn_email = '<a href="'.$email_link.'" target="_blank" class="btn btn-xs bg-gradient-info mb-1 px-2 py-1 text-xxs font-weight-bold" style="white-space:nowrap;" title="Enviar E-mail via Gmail"><i class="material-icons" style="font-size:11px; vertical-align:middle;">email</i> Gmail</a>';
 					
 					// Botão para disparar o e-mail HTML pelo servidor (via SMTP)
-					$btn_email_html = '<span onclick="enviarReciboHTML('.$id.')" style="cursor:pointer;" class="btn btn-sm bg-gradient-primary mb-0 px-3 py-1 text-xs font-weight-bold" title="Enviar E-mail de Obrigado/Recibo HTML"><i class="material-icons text-sm" style="vertical-align: middle;">send</i> Enviar Recibo</span>';
+					$btn_email_html = '<button type="button" onclick="enviarReciboHTML('.$id.')" class="btn btn-xs bg-gradient-primary mb-1 px-2 py-1 text-xxs font-weight-bold" style="white-space:nowrap;" title="Enviar E-mail de Recibo HTML"><i class="material-icons" style="font-size:11px; vertical-align:middle;">send</i> Enviar Recibo</button>';
 				}
 						
 				echo '<tr>
@@ -733,13 +733,13 @@ switch($acao){
 						</div>
 					  </td>
 					  <td>
-						<h6 class="mb-0 text-sm text-white"><a href="mailto:'.$email.'" class="text-info">'.$email.'</a></h6>
+						<h6 class="mb-0 text-sm text-white" style="word-break:break-all;"><a href="mailto:'.$email.'" class="text-info">'.$email.'</a></h6>
 						<span class="text-xs text-secondary">CPF: '.$cpf.'</span>
 					  </td>
 					  
 					  <td class="align-middle text-center">
-						<h6 class="mb-0 text-sm text-white">'.$celular.'</h6>
-						<div class="mt-1 d-flex justify-content-center gap-1 flex-wrap">'.$btn_whatsapp.$btn_email.$btn_email_html.'</div>
+						<h6 class="mb-1 text-sm text-white font-weight-bold">'.$celular.'</h6>
+						<div class="mt-1 d-flex flex-column align-items-center justify-content-center gap-1">'.$btn_whatsapp.$btn_email.$btn_email_html.'</div>
 					  </td>
 				 
 					  <td class="align-middle text-center">
@@ -749,7 +749,7 @@ switch($acao){
 					  
 					  <td class="align-middle text-center">
 						<div class="d-flex align-items-center justify-content-center">
-						  '.(!empty($img_prod) ? '<img src="'.$img_prod.'" alt="'.$produto.'" style="width:42px; height:42px; object-fit:contain; border-radius:6px; border:1px solid rgba(255,255,255,0.15); margin-right:8px; background:#fff;" onerror="this.style.display=\'none\'">' : '').'
+						  '.(!empty($img_prod) ? '<img src="'.$img_prod.'" alt="'.$produto.'" style="width:38px; height:38px; object-fit:contain; border-radius:6px; border:1px solid rgba(255,255,255,0.15); margin-right:8px; background:#fff; flex-shrink:0;" onerror="this.style.display=\'none\'">' : '').'
 						  <div class="text-start">
 							<h6 class="mb-0 text-sm text-white font-weight-bold"><a href="'.$link_prod.'" target="_blank" class="text-white" title="Ver produto na loja">'.$produto.' <i class="fa fa-external-link-alt text-xxs text-info"></i></a></h6>
 							<p class="text-xs text-secondary mb-0">'.$variacoes_str.'</p>
@@ -764,11 +764,11 @@ switch($acao){
 					 
 					  <td class="align-middle text-center">
 						<div class="d-flex flex-column align-items-center justify-content-center gap-1">
-							<div class="d-flex align-items-center justify-content-center gap-2">
-								<span id="'.$id.'" onclick="excluir(this.id);" style="cursor:pointer; padding:6px 12px; display:inline-flex; align-items:center;" class="badge badge-sm bg-gradient-secondary" title="Excluir"><i class="material-icons" style="font-size:16px;">delete</i></span>
-								<span id="'.$ip.'" onclick="sendBlock(this.id)" style="cursor:pointer; padding:6px 12px; display:inline-flex; align-items:center;" class="badge badge-sm bg-gradient-danger" title="Bloquear"><i class="material-icons" style="font-size:16px;">block</i></span>
+							<div class="d-flex align-items-center justify-content-center gap-1 flex-wrap">
+								<span id="'.$id.'" onclick="excluir(this.id);" style="cursor:pointer; padding:4px 8px;" class="badge badge-sm bg-gradient-secondary" title="Excluir"><i class="material-icons" style="font-size:14px;">delete</i></span>
+								<span id="'.$ip.'" onclick="sendBlock(this.id)" style="cursor:pointer; padding:4px 8px;" class="badge badge-sm bg-gradient-danger" title="Bloquear"><i class="material-icons" style="font-size:14px;">block</i></span>
+								'.$status_pagamento_badge.'
 							</div>
-							'.$status_pagamento_badge.'
 							'.$btn_status_rastreio.'
 						</div>
 					  </td>
