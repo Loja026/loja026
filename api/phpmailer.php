@@ -127,7 +127,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
 			$texto = "
 			<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
 				<div style='background-color: #00a650; padding: 25px; text-align: center;'>
-					<h1 style='color: white; margin: 0; font-size: 24px;'>Seu PIX foi gerado! ⏳</h1>
+					<h1 style='color: white; margin: 0; font-size: 24px;'>Seu pedido foi reservado ⏳</h1>
 				</div>
 				<div style='padding: 30px; color: #333; line-height: 1.6;'>
 					<p style='font-size: 16px;'>Olá <strong>$nome</strong>,</p>
@@ -262,5 +262,6 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 ##
 
 ?>
+
 
 
