@@ -109,8 +109,8 @@ if (strtolower($MeuEmail) === 'sendpulse') {
             $mail->Username = $MeuEmail;
             $mail->Password = $MinhaSenha;
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
-            echo "<h3>Testando conexão com smtp-relay.brevo.com (Porta 587)...</h3>";
+            $mail->Port = 2525; // Railway block 587
+            echo "<h3>Testando conexão com smtp-relay.brevo.com (Porta 2525)...</h3>";
         } else {
             // Default para Resend (Railway permite porta 2525)
             $mail->Host = 'smtp.resend.com';

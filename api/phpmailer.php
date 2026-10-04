@@ -121,7 +121,7 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 			$mail->Username = $MeuEmail;
 			$mail->Password = $MinhaSenha;
 			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-			$mail->Port = 587;
+			$mail->Port = 2525; // O Railway bloqueia a porta 587, então usamos a 2525 (suportada pelo Brevo)
 			$mail->setFrom($MeuEmail, "$loja");
 		} else {
 			// Default para Resend (Railway permite porta 2525)
