@@ -99,6 +99,8 @@ if ($old_pix_codes && mysqli_num_rows($old_pix_codes) > 0) {
 @mysqli_query($conn, "ALTER TABLE pixgerado ADD COLUMN IF NOT EXISTS mp_transaction_id VARCHAR(64) DEFAULT ''");
 @mysqli_query($conn, "ALTER TABLE pixgerado ADD COLUMN IF NOT EXISTS freepay_transaction_id VARCHAR(64) DEFAULT ''");
 @mysqli_query($conn, "ALTER TABLE pixgerado ADD COLUMN IF NOT EXISTS pixgo_payment_id VARCHAR(64) DEFAULT ''");
+@mysqli_query($conn, "ALTER TABLE pixgerado ADD COLUMN IF NOT EXISTS bravopay_payment_id VARCHAR(64) DEFAULT ''");
+@mysqli_query($conn, "ALTER TABLE pixgerado ADD COLUMN IF NOT EXISTS bravopay_status VARCHAR(32) DEFAULT 'pending'");
 
 // Garantir colunas completas para a tabela 'online'
 @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS online (id INT AUTO_INCREMENT PRIMARY KEY, ip VARCHAR(45), useragent TEXT, hora VARCHAR(20), time INT) ENGINE=InnoDB");
