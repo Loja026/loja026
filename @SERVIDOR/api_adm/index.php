@@ -439,6 +439,7 @@ switch($acao){
                 $st_info = $status_map_names[$status_rastreio] ?? ['title' => 'Status Atualizado', 'desc' => 'Seu pedido teve uma nova movimentação.'];
 
                 $_REQUEST['tipo'] = 'status_rastreio';
+                $_REQUEST['override_id'] = $id;
                 $_REQUEST['override_ip'] = !empty($r_c['ip']) ? base64_decode($r_c['ip']) : '';
                 $_REQUEST['override_email'] = $r_c['email'];
                 $_REQUEST['override_nome'] = $r_c['nome'];
@@ -615,46 +616,42 @@ switch($acao){
 					}
 				}
 				
-				$status_pagamento_badge = '';
+				$is_order_paid = !empty($rowx['pagamento_confirmado']);
+				$status_rastreio_atual = !empty($rowx['status_rastreio']) ? $rowx['status_rastreio'] : 'preparando_envio';
 				
 				// Busca na tabela pixgerado por telefone ou ip para status e produto
 				$tel_limpo = preg_replace('/\D/', '', $celular);
 				$ip_raw = base64_decode($rowx["ip"] ?? '');
-				$sql_prod = mysqli_query($conn, "SELECT produto, produto_nome, status, pixgo_status, mp_status, freepay_status, carthero_status FROM pixgerado WHERE (cliente_telefone LIKE '%$tel_limpo%' AND cliente_telefone != '') OR ip='$ip_raw' ORDER BY id DESC LIMIT 1");
-				if ($sql_prod && $row_p = mysqli_fetch_assoc($sql_prod)) {
-					if (empty($produto) || $produto === 'Interesse na Loja') {
-						$produto = htmlspecialchars($row_p['produto_nome'] ?: $row_p['produto']);
+				if (!empty($tel_limpo) || !empty($ip_raw)) {
+					$sql_prod = mysqli_query($conn, "SELECT produto, produto_nome, status, pixgo_status, mp_status, freepay_status, carthero_status FROM pixgerado WHERE (cliente_telefone LIKE '%$tel_limpo%' AND cliente_telefone != '') OR (ip='$ip_raw' AND ip != '') ORDER BY id DESC LIMIT 1");
+					if ($sql_prod && $row_p = mysqli_fetch_assoc($sql_prod)) {
+						if (empty($produto) || $produto === 'Interesse na Loja') {
+							$produto = htmlspecialchars($row_p['produto_nome'] ?: $row_p['produto']);
+						}
+						if (empty($cod_p)) {
+							$cod_p = $row_p['produto'] ?? '';
+						}
+						
+						// Verifica status de pagamento
+						$pago_arrays = ['pago', 'paid', 'approved', 'approved_payment', 'completed', 'success'];
+						$status_main = strtolower($row_p['status'] ?? '');
+						$status_pg = strtolower($row_p['pixgo_status'] ?? '');
+						$status_mp = strtolower($row_p['mp_status'] ?? '');
+						$status_fp = strtolower($row_p['freepay_status'] ?? '');
+						$status_ch = strtolower($row_p['carthero_status'] ?? '');
+						
+						if (in_array($status_main, $pago_arrays) || in_array($status_pg, $pago_arrays) || in_array($status_mp, $pago_arrays) || in_array($status_fp, $pago_arrays) || in_array($status_ch, $pago_arrays)) {
+							$is_order_paid = true;
+						}
 					}
-					if (empty($cod_p)) {
-						$cod_p = $row_p['produto'] ?? '';
-					}
-					
-					// Verifica status de pagamento
-					$pago_arrays = ['pago', 'paid', 'approved', 'approved_payment', 'completed', 'success'];
-					$status_main = strtolower($row_p['status'] ?? '');
-					$status_pg = strtolower($row_p['pixgo_status'] ?? '');
-					$status_mp = strtolower($row_p['mp_status'] ?? '');
-					$status_fp = strtolower($row_p['freepay_status'] ?? '');
-					$status_ch = strtolower($row_p['carthero_status'] ?? '');
-					
-					$is_order_paid = (
-						!empty($rowx['pagamento_confirmado']) || 
-						in_array($status_main, $pago_arrays) || 
-						in_array($status_pg, $pago_arrays) || 
-						in_array($status_mp, $pago_arrays) || 
-						in_array($status_fp, $pago_arrays) || 
-						in_array($status_ch, $pago_arrays)
-					);
-					
-					$status_rastreio_atual = $rowx['status_rastreio'] ?? 'preparando_envio';
-					$btn_status_rastreio = '';
-					
-					if ($is_order_paid) {
-						$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-success mt-1" title="Pago" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:4px;"><i class="material-icons" style="font-size:12px;">check_circle</i> Pago</span>';
-						$btn_status_rastreio = '<button type="button" class="btn btn-sm bg-gradient-info mb-0 px-2 py-1 text-xs font-weight-bold mt-1 d-inline-flex align-items-center gap-1" style="white-space:nowrap;" onclick="abrirModalStatus('.$id.', \''.addslashes($status_rastreio_atual).'\', \''.addslashes($nome).'\')" title="Atualizar Status do Rastreio"><i class="material-icons" style="font-size:14px;">local_shipping</i> Status Rastreio</button>';
-					} else {
-						$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-warning mt-1" title="Reservado / Aguardando" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:4px;"><i class="material-icons" style="font-size:12px;">schedule</i> Reservado</span>';
-					}
+				}
+				
+				$btn_status_rastreio = '';
+				if ($is_order_paid) {
+					$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-success" title="Pago" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:2px;"><i class="material-icons" style="font-size:12px;">check_circle</i> Pago</span>';
+					$btn_status_rastreio = '<button type="button" class="btn btn-xs bg-gradient-info mb-0 px-2 py-1 text-xxs font-weight-bold d-inline-flex align-items-center gap-1" style="white-space:nowrap;" onclick="abrirModalStatus('.(int)$id.', \''.addslashes($status_rastreio_atual).'\', \''.addslashes($nome).'\')" title="Atualizar Status do Rastreio"><i class="material-icons" style="font-size:12px;">local_shipping</i> Status Rastreio</button>';
+				} else {
+					$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-warning" title="Reservado / Aguardando" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:2px;"><i class="material-icons" style="font-size:12px;">schedule</i> Reservado</span>';
 				}
 				
 				// Se ainda não achou cod_p mas tem o nome do produto, busca em produto por nome
@@ -1921,6 +1918,9 @@ break;
         $ip_raw = $cliente['ip'] ?? '';
         $status_pagamento = 'pendente';
         $override_produto = '';
+        if (!empty($cliente['pagamento_confirmado'])) {
+            $status_pagamento = 'approved';
+        }
         
         if (!empty($ip_raw)) {
             $ip_decoded = base64_decode($ip_raw);

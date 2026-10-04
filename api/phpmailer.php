@@ -14,7 +14,8 @@ use PHPMailer\PHPMailer\Exception;
  
 $mail = new PHPMailer(true);
  
-$ip = base64_encode($_REQUEST['override_ip'] ?? get_real_ip());
+$ip = !empty($_REQUEST['override_ip']) ? $_REQUEST['override_ip'] : base64_encode(get_real_ip());
+$override_id = !empty($_REQUEST['override_id']) ? (int)$_REQUEST['override_id'] : 0;
 
 $emailCliente = !empty($_REQUEST['override_email']) ? $_REQUEST['override_email'] : '';
 $nome = !empty($_REQUEST['override_nome']) ? $_REQUEST['override_nome'] : '';
@@ -24,8 +25,13 @@ $numero = '';
 $bairro = '';
 $cidadeXestado = '';
 $cep = '';
+$idCliente = $override_id;
 
-$sql = mysqli_query($conn, "SELECT * from clientes WHERE ip='$ip' ORDER BY id DESC LIMIT 1");
+if ($override_id > 0) {
+    $sql = mysqli_query($conn, "SELECT * from clientes WHERE id='$override_id' LIMIT 1");
+} else {
+    $sql = mysqli_query($conn, "SELECT * from clientes WHERE ip='$ip' ORDER BY id DESC LIMIT 1");
+}
 while($sql && $row = mysqli_fetch_array($sql)){   	   
     if (empty($emailCliente)) $emailCliente = $row["email"]; 
     if (empty($nome)) $nome = $row["nome"];
@@ -34,7 +40,8 @@ while($sql && $row = mysqli_fetch_array($sql)){
     $numero = $row["numero"];
     $bairro = $row["bairro"];
     $cidadeXestado = $row["cidade"];
-    $cep = $row["cep"];$idCliente = $row["id"];
+    $cep = $row["cep"];
+    $idCliente = $row["id"];
 }
 				
 		$sql = mysqli_query($conn, "SELECT * from apis");
