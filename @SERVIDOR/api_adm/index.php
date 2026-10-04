@@ -1831,7 +1831,38 @@ break;
         $smtp_user = $recorte[0];
         $smtp_pass = $recorte[1];
         
-        // Carrega PHPMailer
+        // Tenta enviar via Brevo HTTP API para contornar bloqueio SMTP
+        if (strpos(strtolower($smtp_user), '@smtp-brevo.com') !== false || strpos(strtolower($smtp_user), 'brevo') !== false) {
+            $payload = json_encode([
+                "sender" => ["name" => "Nossa Loja", "email" => $smtp_user],
+                "to" => [["email" => $email_destino, "name" => $nome]],
+                "subject" => "Confirmação do seu pedido: " . $produto_nome,
+                "htmlContent" => $htmlBody
+            ]);
+
+            $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'api-key: ' . $smtp_pass,
+                'accept: application/json'
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode == 201 || $httpCode == 200) {
+                echo json_encode(['ok' => true]);
+            } else {
+                echo json_encode(['ok' => false, 'error' => "Erro Brevo API: $httpCode - $response"]);
+            }
+            break;
+        }
+
+        // Fallback para PHPMailer SMTP se não for Brevo
         require_once(__DIR__ . '/../../api/src/PHPMailer.php');
         require_once(__DIR__ . '/../../api/src/SMTP.php');
         require_once(__DIR__ . '/../../api/src/Exception.php');
