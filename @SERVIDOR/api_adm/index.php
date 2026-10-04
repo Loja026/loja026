@@ -1818,19 +1818,19 @@ break;
         }
         
         // Busca SMTP config
-        $sql_api = mysqli_query($conn, "SELECT email, htmlemail from apis LIMIT 1");
+        $sql_api = mysqli_query($conn, "SELECT email from apis LIMIT 1");
         if (!$sql_api || !($row_api = mysqli_fetch_assoc($sql_api))) {
             echo json_encode(['ok' => false, 'error' => 'SMTP não configurado no painel']);
             break;
         }
         
-        $smtp_user = trim($row_api["email"] ?? '');
-        $smtp_pass = trim($row_api["htmlemail"] ?? '');
-        
-        if (empty($smtp_user) || empty($smtp_pass)) {
+        $recorte = explode("|", $row_api["email"] ?? '');
+        if (count($recorte) < 2) {
             echo json_encode(['ok' => false, 'error' => 'Credenciais SMTP inválidas no painel']);
             break;
         }
+        $smtp_user = trim($recorte[0]);
+        $smtp_pass = trim($recorte[1]);
         
         $htmlBody = "
         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;'>
