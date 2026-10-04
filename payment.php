@@ -31,7 +31,7 @@ if (!isset($_GET["produto"])) {
             $valor = $row1["valor"];
             $img = $row1["img"];
         }
-        $_SESSION['session_payment'] = time() + 1000;<?php 
+        $_SESSION['session_payment'] = time() + 1000;
 $cli_nome = "";
 $cli_rua = "";
 $cli_numero = "";
@@ -50,7 +50,7 @@ if (isset($_GET["cid"])) {
         $cli_complemento = isset($row_c["complemento"]) ? $row_c["complemento"] : "";
     }
 }
-?>
+
         $logo_files = glob("arquivos/logo/*.png");
         $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
     } else {
@@ -564,6 +564,9 @@ if (isset($_GET["cid"])) {
     </script>
 </body>
 </html>
+
+
+
 
 
 
