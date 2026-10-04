@@ -593,7 +593,7 @@ switch($acao){
             $_REQUEST['override_nome'] = $_SESSION['cliente_dados']['nome'] ?? '';
         }
         ob_start();
-        @include(__DIR__ . '/phpmailer.php');
+        // @include(__DIR__ . '/phpmailer.php');
         ob_end_clean();
 
         echo $pix_code . "|" . $imageString . "|" . $gateway_name . "|" . $tid;
