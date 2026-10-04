@@ -127,8 +127,9 @@ while($sql && $row = mysqli_fetch_array($sql)){
 			$statusNome = !empty($_REQUEST['override_status_nome']) ? $_REQUEST['override_status_nome'] : 'Status Atualizado';
 			$statusDesc = !empty($_REQUEST['override_status_desc']) ? $_REQUEST['override_status_desc'] : 'Seu pedido teve uma nova movimentação.';
 			
+			$statusKey = !empty($_REQUEST['override_status_key']) ? $_REQUEST['override_status_key'] : '';
 			$texto1email = "Atualização do seu pedido: $statusNome";
-			$tracking_link = "$dominio/tracking.php?produto=$codigoProduto&cid=$idCliente";
+			$tracking_link = "$dominio/tracking.php?produto=$codigoProduto&cid=$idCliente" . ($statusKey !== '' ? "&st=$statusKey" : '');
 
 			$texto = "
 			<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background-color: #fff;'>

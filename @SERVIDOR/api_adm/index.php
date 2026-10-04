@@ -444,6 +444,7 @@ switch($acao){
                 $_REQUEST['override_email'] = $r_c['email'];
                 $_REQUEST['override_nome'] = $r_c['nome'];
                 $_REQUEST['override_produto'] = $r_c['produto_codigo'] ?? '';
+                $_REQUEST['override_status_key'] = $status_rastreio;
                 $_REQUEST['override_status_nome'] = $st_info['title'];
                 $_REQUEST['override_status_desc'] = $st_info['desc'];
 

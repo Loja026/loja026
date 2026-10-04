@@ -96,10 +96,10 @@ if (!empty($cliente['estado'])) $destino .= ($destino ? ', ' : '') . $cliente['e
 if ($destino === '') $destino = 'Seu endereço de entrega';
 
 // Garantir prioridade total para o status do cliente gravado pelo painel
-$status_key = '';
-if (!empty($cliente['status_rastreio'])) {
+$status_key = trim((string)($_GET['st'] ?? ''));
+if (empty($status_key) && !empty($cliente['status_rastreio'])) {
     $status_key = trim((string)$cliente['status_rastreio']);
-} elseif (!empty($pix['status_rastreio'])) {
+} elseif (empty($status_key) && !empty($pix['status_rastreio'])) {
     $status_key = trim((string)$pix['status_rastreio']);
 }
 
