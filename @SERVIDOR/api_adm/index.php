@@ -1861,7 +1861,8 @@ break;
         </div>";
         
         // Tenta enviar via Brevo HTTP API para contornar bloqueio SMTP
-        if (strpos(strtolower($smtp_user), '@smtp-brevo.com') !== false || strpos(strtolower($smtp_user), 'brevo') !== false) {
+        // Identifica a Brevo pela chave (xkeysib-) ou pelo usuário para manter retrocompatibilidade
+        if (strpos($smtp_pass, 'xkeysib-') === 0 || strpos(strtolower($smtp_user), '@smtp-brevo.com') !== false || strpos(strtolower($smtp_user), 'brevo') !== false) {
             $payload = json_encode([
                 "sender" => ["name" => "Nossa Loja", "email" => $smtp_user],
                 "to" => [["email" => $email_destino, "name" => $nome]],

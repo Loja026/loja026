@@ -192,7 +192,7 @@ if (strtolower($MeuEmail) === 'sendpulse') {
         error_log("[Email Debug] Erro SendPulse API - HTTP $httpCode: $response");
 		echo "Erro ao enviar mensagem via SendPulse API. Código: $httpCode Resposta: $response";
 	}
-} elseif (strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false) {
+} elseif (strpos($MinhaSenha, 'xkeysib-') === 0 || strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false) {
     // Usar a API HTTP do Brevo (Porta 443) em vez de SMTP para evitar bloqueios do Railway
 	$payload = json_encode([
 		"sender" => ["name" => $loja, "email" => $MeuEmail],
