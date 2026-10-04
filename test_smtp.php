@@ -86,6 +86,43 @@ if (strtolower($MeuEmail) === 'sendpulse') {
              echo "<br><b style='color:red;'>Falha na requisição API SendPulse. Verifique sua Chave de API.</b><br>";
         }
     }
+} elseif (strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false) {
+    echo "<h3>Testando conexão com API do Brevo (HTTPS porta 443)...</h3>";
+    
+    $payload = json_encode([
+        "sender" => ["name" => "Teste", "email" => $MeuEmail],
+        "to" => [["email" => "yagooook21@gmail.com", "name" => "Cliente"]],
+        "subject" => "Teste de Integração Brevo",
+        "htmlContent" => "<p>Email de teste via Brevo API.</p>"
+    ]);
+
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'api-key: ' . $MinhaSenha,
+        'accept: application/json'
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+        echo "<br><b style='color:red;'>Erro de conexão cURL:</b> $curlError";
+    } else {
+        echo "<b>Código HTTP da Resposta:</b> " . $httpCode . "<br>";
+        echo "<b>Resposta da API:</b> " . htmlspecialchars($response) . "<br>";
+        
+        if ($httpCode == 201 || $httpCode == 200) {
+             echo "<br><b style='color:green;'>Conexão via API Brevo estabelecida e e-mail enviado com sucesso!</b><br>";
+        } else {
+             echo "<br><b style='color:red;'>Falha na requisição API Brevo. Verifique sua Chave de API (você colou a senha do SMTP em vez da API Key?).</b><br>";
+        }
+    }
 } else {
     $mail = new PHPMailer(true);
 
@@ -104,13 +141,6 @@ if (strtolower($MeuEmail) === 'sendpulse') {
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port = 465;
             echo "<h3>Testando conexão com smtp.gmail.com (Porta 465)...</h3>";
-        } elseif (strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false) {
-            $mail->Host = 'smtp-relay.brevo.com';
-            $mail->Username = $MeuEmail;
-            $mail->Password = $MinhaSenha;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 2525; // Railway block 587
-            echo "<h3>Testando conexão com smtp-relay.brevo.com (Porta 2525)...</h3>";
         } else {
             // Default para Resend (Railway permite porta 2525)
             $mail->Host = 'smtp.resend.com';
