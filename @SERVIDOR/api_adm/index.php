@@ -1588,11 +1588,14 @@ break;
 				 while($sql && $rowx = mysqli_fetch_array($sql)){ 
 				 
 				 $emailx = $rowx["email"];
+				 $smtpAtivo = isset($rowx["smtp_ativo"]) ? intval($rowx["smtp_ativo"]) : 0;
 				 
 				 }
 				 
-				  if(strpos($emailx, "@")){
+				  if(strpos($emailx, "@") || strpos($emailx, "|")){
 				  $partes = explode("|", $emailx);
+				  
+				  $btnSmtp = $smtpAtivo === 1 ? '<span onclick="fetch(\'../../api/toggle_smtp.php?status=0\').then(()=>location.reload())" style="cursor:pointer; margin-right:5px;" class="badge badge-sm bg-gradient-success">ON</span>' : '<span onclick="fetch(\'../../api/toggle_smtp.php?status=1\').then(()=>location.reload())" style="cursor:pointer; margin-right:5px;" class="badge badge-sm bg-gradient-danger">OFF</span>';
 				  
 				  echo '<tr>
                       <td>
@@ -1600,6 +1603,7 @@ break;
 						<span class="text-secondary text-xs font-weight-bold">'.$partes[1].'</span>
                       </td>					  
                       <td class="align-middle">
+					   '.$btnSmtp.'
                        <span id="email" onclick="excluir(this.id);" style="cursor:pointer;" class="badge badge-sm bg-gradient-dark toast-btn" data-target="infoToast">Delete</span>
                       </td>
                     </tr>';
