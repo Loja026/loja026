@@ -49,10 +49,6 @@ if (empty($cliente)) {
         $cliente_result = mysqli_query($conn, "SELECT * FROM clientes WHERE ip='$cliente_ip' ORDER BY id DESC LIMIT 1");
         $cliente = ($cliente_result && mysqli_num_rows($cliente_result) > 0) ? mysqli_fetch_assoc($cliente_result) : [];
     }
-    if (empty($cliente) && $produto_codigo !== '') {
-        $cliente_result = mysqli_query($conn, "SELECT * FROM clientes WHERE produto_codigo='$produto_safe' ORDER BY id DESC LIMIT 1");
-        $cliente = ($cliente_result && mysqli_num_rows($cliente_result) > 0) ? mysqli_fetch_assoc($cliente_result) : [];
-    }
 }
 
 $pix = null;
