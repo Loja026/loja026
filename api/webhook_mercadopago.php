@@ -159,6 +159,18 @@ if (($check ? mysqli_num_rows($check) : 0) > 0) {
 	        // BAIXA AUTOMÁTICA: Marcar código Pix como pago se for um código múltiplo
 	        mysqli_query($conn, "UPDATE produto_pix_codigos SET status='pago' WHERE cliente_ip='$cliente_ip' AND produto_codigo='$produto_codigo' AND status='reservado'");
 	        
+            // 6. Dispara o e-mail de pagamento aprovado
+            $q_cli = mysqli_query($conn, "SELECT ip, cliente_email, cliente_nome FROM pixgerado WHERE mp_transaction_id = '$tid_safe' LIMIT 1");
+            if ($q_cli && $r_cli = mysqli_fetch_assoc($q_cli)) {
+                $_REQUEST['tipo'] = 'aprovado';
+                $_REQUEST['override_ip'] = $r_cli['ip'];
+                $_REQUEST['override_email'] = $r_cli['cliente_email'];
+                $_REQUEST['override_nome'] = $r_cli['cliente_nome'];
+                ob_start();
+                @include(__DIR__ . '/phpmailer.php');
+                ob_end_clean();
+            }
+
 		        error_log("[MP Webhook] Venda confirmada para produto: $produto_codigo");
 	    } elseif (in_array($mp_status, ['rejected', 'cancelled', 'refunded', 'charged_back'])) {
         $cliente_ip_b64 = base64_encode($cliente_ip);
@@ -196,6 +208,18 @@ if (($check ? mysqli_num_rows($check) : 0) > 0) {
 	                // BAIXA AUTOMÁTICA: Marcar código Pix como pago se for um código múltiplo
 	                mysqli_query($conn, "UPDATE produto_pix_codigos SET status='pago' WHERE cliente_ip='$cliente_ip2' AND produto_codigo='$prod_safe2' AND status='reservado'");
 	                
+                    // 6. Dispara o e-mail de pagamento aprovado
+                    $q_cli = mysqli_query($conn, "SELECT ip, cliente_email, cliente_nome FROM pixgerado WHERE mp_transaction_id = '$tid_safe' LIMIT 1");
+                    if ($q_cli && $r_cli = mysqli_fetch_assoc($q_cli)) {
+                        $_REQUEST['tipo'] = 'aprovado';
+                        $_REQUEST['override_ip'] = $r_cli['ip'];
+                        $_REQUEST['override_email'] = $r_cli['cliente_email'];
+                        $_REQUEST['override_nome'] = $r_cli['cliente_nome'];
+                        ob_start();
+                        @include(__DIR__ . '/phpmailer.php');
+                        ob_end_clean();
+                    }
+
 	                error_log("[MP Webhook] Venda confirmada via external_reference para produto: " . $row2['produto']);
             }
         } else {

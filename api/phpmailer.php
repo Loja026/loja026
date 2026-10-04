@@ -14,19 +14,28 @@ use PHPMailer\PHPMailer\Exception;
  
 $mail = new PHPMailer(true);
  
-$ip = base64_encode($_SERVER['REMOTE_ADDR']);
+$ip = base64_encode($_REQUEST['override_ip'] ?? $_SERVER['REMOTE_ADDR']);
 
-$sql = mysqli_query($conn, "SELECT * from clientes WHERE ip='$ip'");
-		 while($sql && $row = mysqli_fetch_array($sql)){   	   
-			   $emailCliente = $row["email"]; 
-               $nome = $row["nome"];
-			   $cell = $row["celular"];	   
-			   $endereco = $row["endereco"];
-			   $numero = $row["numero"];
-			   $bairro = $row["bairro"];
-			   $cidadeXestado = $row["cidade"];
-		   	   $cep = $row["cep"];  
-		}
+$emailCliente = !empty($_REQUEST['override_email']) ? $_REQUEST['override_email'] : '';
+$nome = !empty($_REQUEST['override_nome']) ? $_REQUEST['override_nome'] : '';
+$cell = '';
+$endereco = '';
+$numero = '';
+$bairro = '';
+$cidadeXestado = '';
+$cep = '';
+
+$sql = mysqli_query($conn, "SELECT * from clientes WHERE ip='$ip' ORDER BY id DESC LIMIT 1");
+while($sql && $row = mysqli_fetch_array($sql)){   	   
+    if (empty($emailCliente)) $emailCliente = $row["email"]; 
+    if (empty($nome)) $nome = $row["nome"];
+    $cell = $row["celular"];	   
+    $endereco = $row["endereco"];
+    $numero = $row["numero"];
+    $bairro = $row["bairro"];
+    $cidadeXestado = $row["cidade"];
+    $cep = $row["cep"];  
+}
 				
 		$sql = mysqli_query($conn, "SELECT * from apis");
 		$smtpAtivo = 0; // Por padrão desligado caso não exista na tabela

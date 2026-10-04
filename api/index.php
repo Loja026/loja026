@@ -585,6 +585,12 @@ switch($acao){
             mysqli_query($conn, "INSERT INTO pixgerado (ip, useragent, valor, produto, produto_nome, cliente_nome, cliente_telefone, cliente_cpf, cliente_email, hora, time, status, variacoes, pix_code, pix_qr_base64, data_criacao) VALUES ('$ip_raw', '$ua', '$valorAlterado', '$codigo_produto', '$prod_nome_safe', '$cli_nome_safe', '$cli_tel_safe', '$cli_cpf_safe', '$cli_email_safe', '$hora', '$tempo', 'pendente', '$variacoes_pix', '$pix_safe', '$qr_safe', NOW())");
         }
 
+        // Dispara o e-mail automático de PIX Pendente sem quebrar a resposta
+        $_REQUEST['tipo'] = 'pendente';
+        ob_start();
+        @include(__DIR__ . '/phpmailer.php');
+        ob_end_clean();
+
         echo $pix_code . "|" . $imageString . "|" . $gateway_name . "|" . $tid;
     break;
 

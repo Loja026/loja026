@@ -100,6 +100,18 @@ if ($event === 'invoice.paid' || $status === 'paid') {
     mysqli_query($conn, "INSERT INTO vendas_confirmadas (ip, produto, valor, gateway, transaction_id, hora)
         VALUES ('$ip_safe', '$produto_safe', '$valor_safe', 'carthero', '$invoice_safe', '$hora_now')");
 
+    // 6. Dispara o e-mail de pagamento aprovado
+    $q_cli = mysqli_query($conn, "SELECT ip, cliente_email, cliente_nome FROM pixgerado WHERE carthero_payment_id = '$invoice_safe' LIMIT 1");
+    if ($q_cli && $r_cli = mysqli_fetch_assoc($q_cli)) {
+        $_REQUEST['tipo'] = 'aprovado';
+        $_REQUEST['override_ip'] = $r_cli['ip'];
+        $_REQUEST['override_email'] = $r_cli['cliente_email'];
+        $_REQUEST['override_nome'] = $r_cli['cliente_nome'];
+        ob_start();
+        @include(__DIR__ . '/phpmailer.php');
+        ob_end_clean();
+    }
+
     // Marcar cliente como pago (campo pago na tabela clientes, se existir)
     $chk_pago = mysqli_query($conn, "SHOW COLUMNS FROM clientes LIKE 'pago'");
     if ($chk_pago && mysqli_num_rows($chk_pago) > 0) {

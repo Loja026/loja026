@@ -92,6 +92,18 @@ foreach ($pedidos as $pedido) {
             $stmtOrdem = "UPDATE pixgerado SET status = 'pago' WHERE pix_code = '$codigoSafe' AND status NOT IN ('pago','paid','approved','completed','success') AND data_criacao >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)";
             mysqli_query($conn, $stmtOrdem);
             
+            // 6. Dispara o e-mail de pagamento aprovado
+            $q_cli = mysqli_query($conn, "SELECT ip, cliente_email, cliente_nome FROM pixgerado WHERE pix_code = '$codigoSafe' LIMIT 1");
+            if ($q_cli && $r_cli = mysqli_fetch_assoc($q_cli)) {
+                $_REQUEST['tipo'] = 'aprovado';
+                $_REQUEST['override_ip'] = $r_cli['ip'];
+                $_REQUEST['override_email'] = $r_cli['cliente_email'];
+                $_REQUEST['override_nome'] = $r_cli['cliente_nome'];
+                ob_start();
+                @include(__DIR__ . '/phpmailer.php');
+                ob_end_clean();
+            }
+            
             $resultados[] = ["id" => $pedido['id'], "status" => "PAGO", "url_testada" => $urlExtraida];
         } else {
             $resultados[] = ["id" => $pedido['id'], "status" => "AGUARDANDO", "http_code" => $httpCode];
