@@ -103,13 +103,20 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 		//$mail->SMTPDebug = SMTP::DEBUG_SERVER;
 		$mail->isSMTP();
 		
-		// Verifica se é Gmail
 		if (strpos(strtolower($MeuEmail), '@gmail.com') !== false) {
 			$mail->Host = 'smtp.gmail.com';
 			$mail->Username = $MeuEmail;
 			$mail->Password = $MinhaSenha;
 			$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
 			$mail->Port = 465;
+			$mail->setFrom($MeuEmail, "$loja");
+		} elseif (strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false) {
+			// Configuração para Brevo
+			$mail->Host = 'smtp-relay.brevo.com';
+			$mail->Username = $MeuEmail;
+			$mail->Password = $MinhaSenha;
+			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+			$mail->Port = 587;
 			$mail->setFrom($MeuEmail, "$loja");
 		} else {
 			// Default para Resend (Railway permite porta 2525)

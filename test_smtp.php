@@ -97,7 +97,6 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 
         $mail->isSMTP();
         
-        // Verifica se é Gmail
         if (strpos(strtolower($MeuEmail), '@gmail.com') !== false) {
             $mail->Host = 'smtp.gmail.com';
             $mail->Username = $MeuEmail;
@@ -105,6 +104,13 @@ if (strtolower($MeuEmail) === 'sendpulse') {
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port = 465;
             echo "<h3>Testando conexão com smtp.gmail.com (Porta 465)...</h3>";
+        } elseif (strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false) {
+            $mail->Host = 'smtp-relay.brevo.com';
+            $mail->Username = $MeuEmail;
+            $mail->Password = $MinhaSenha;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+            echo "<h3>Testando conexão com smtp-relay.brevo.com (Porta 587)...</h3>";
         } else {
             // Default para Resend (Railway permite porta 2525)
             $mail->Host = 'smtp.resend.com';
