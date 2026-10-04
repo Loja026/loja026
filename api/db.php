@@ -180,5 +180,5 @@ require_once __DIR__ . '/schema_check.php';
 @mysqli_query($conn, "ALTER TABLE produto ADD COLUMN IF NOT EXISTS cliques INT DEFAULT 0");
 
 @mysqli_query($conn, "ALTER TABLE config ADD COLUMN IF NOT EXISTS app_mobile_ativo TINYINT(1) DEFAULT 0");
-
+@mysqli_query($conn, "ALTER TABLE apis ADD COLUMN IF NOT EXISTS smtp_ativo TINYINT(1) DEFAULT 1");
 ?>

@@ -14,7 +14,7 @@ use PHPMailer\PHPMailer\Exception;
  
 $mail = new PHPMailer(true);
  
-$ip = base64_encode($_REQUEST['override_ip'] ?? $_SERVER['REMOTE_ADDR']);
+$ip = base64_encode($_REQUEST['override_ip'] ?? get_real_ip());
 
 $emailCliente = !empty($_REQUEST['override_email']) ? $_REQUEST['override_email'] : '';
 $nome = !empty($_REQUEST['override_nome']) ? $_REQUEST['override_nome'] : '';
@@ -38,12 +38,12 @@ while($sql && $row = mysqli_fetch_array($sql)){
 }
 				
 		$sql = mysqli_query($conn, "SELECT * from apis");
-		$smtpAtivo = 0; // Por padrão desligado caso não exista na tabela
+		$smtpAtivo = 1; // Por padrão LIGADO
 		while($sql && $row = mysqli_fetch_array($sql)){   	   
 			$emailPHPMAILER = $row["email"]; 
 			$htmlEmail = $row["htmlemail"]; 
 			$texto1email = $row["texto1email"]; 
-			$smtpAtivo = isset($row["smtp_ativo"]) ? intval($row["smtp_ativo"]) : 0;
+			$smtpAtivo = isset($row["smtp_ativo"]) ? intval($row["smtp_ativo"]) : 1;
 		}
 
 		// Se o SMTP estiver desligado (0), encerra o script de email silenciosamente
@@ -186,8 +186,10 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 	curl_close($ch);
 
 	if ($httpCode == 200) {
+        error_log("[Email Debug] SendPulse API - Sucesso.");
 		echo 'Email enviado com sucesso';
 	} else {
+        error_log("[Email Debug] Erro SendPulse API - HTTP $httpCode: $response");
 		echo "Erro ao enviar mensagem via SendPulse API. Código: $httpCode Resposta: $response";
 	}
 } elseif (strpos(strtolower($MeuEmail), '@smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false) {
