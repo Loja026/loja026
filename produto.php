@@ -749,7 +749,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <div class="mobile-only" style="width: 100%;">
       <div class="badges-row pdp-px-16">
         <div class="rating-row">
-          <span>Novo | +500 vendidos</span>
+          <span>Novo | +5.000 vendidos</span>
         </div>
         <div class="rating-row">
           <span>4.9</span>
@@ -793,7 +793,7 @@ document.addEventListener("DOMContentLoaded", function() {
       <div class="desktop-only">
         <div class="badges-row pdp-px-16" style="margin-bottom: 8px;">
           <div class="rating-row">
-            <span>Novo | +500 vendidos 4.9</span>
+            <span>Novo | +5.000 vendidos 4.9</span>
             <div class="stars">
               <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
             </div>
