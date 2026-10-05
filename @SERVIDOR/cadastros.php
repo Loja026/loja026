@@ -224,7 +224,7 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
             <i class="material-icons text-info me-1" style="font-size:1.4rem; vertical-align:middle;">local_shipping</i>
             <span>Atualizar Status do Pedido</span>
           </h5>
-          <button type="button" class="btn btn-sm btn-icon-only text-white mb-0" data-bs-dismiss="modal" aria-label="Close" style="background:rgba(255,255,255,0.15); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Fechar">
+          <button type="button" class="btn btn-sm btn-icon-only text-white mb-0" onclick="fecharModalStatus()" data-bs-dismiss="modal" aria-label="Close" style="background:rgba(255,255,255,0.15); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Fechar">
             <i class="material-icons" style="font-size:18px; line-height:1;">close</i>
           </button>
         </div>
@@ -255,7 +255,7 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
           </div>
         </div>
         <div class="modal-footer border-top border-secondary p-3 d-flex align-items-center justify-content-end gap-2" style="background:#1a1f36;">
-          <button type="button" class="btn btn-outline-light btn-sm mb-0" data-bs-dismiss="modal"><i class="material-icons text-sm me-1">close</i> Fechar</button>
+          <button type="button" class="btn btn-outline-light btn-sm mb-0" onclick="fecharModalStatus()" data-bs-dismiss="modal"><i class="material-icons text-sm me-1">close</i> Fechar</button>
           <button type="button" onclick="salvarStatusRastreio()" id="btnSalvarStatus" class="btn bg-gradient-info btn-sm mb-0 d-flex align-items-center gap-1">
             <i class="material-icons text-sm">save</i> Salvar Status
           </button>
@@ -351,6 +351,22 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
       });
     }
 
+    function fecharModalStatus() {
+      try {
+        var modalEl = document.getElementById('modalStatusRastreio');
+        if (window.bootstrap && bootstrap.Modal) {
+          var modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+        }
+        $('#modalStatusRastreio').removeClass('show').css('display', 'none');
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('overflow', '');
+      } catch(e) {
+        $('#modalStatusRastreio').hide();
+        $('.modal-backdrop').remove();
+      }
+    }
+
     function abrirModalStatus(id, currentStatus, nome) {
       $('#status_cliente_id').val(id);
       $('#status_cliente_nome').text(nome || 'Cliente');
@@ -391,9 +407,7 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
         timeout: 10000,
         success: function(res) {
           $('#btnSalvarStatus').prop('disabled', false).html('<i class="material-icons text-sm">save</i> Salvar Status');
-          var modalEl = document.getElementById('modalStatusRastreio');
-          var modal = bootstrap.Modal.getInstance(modalEl);
-          if (modal) modal.hide();
+          fecharModalStatus();
           
           try {
             var r = typeof res === 'string' ? JSON.parse(res) : res;
