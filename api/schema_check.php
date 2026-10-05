@@ -4,15 +4,10 @@ if (!isset($conn) || !$conn) {
     return;
 }
 
-// if (!empty($_SESSION['schema_check_ok'])) {
-//     return;
-// }
-
-// $flag_file = sys_get_temp_dir() . '/loja_schema_' . md5(__FILE__) . '.flag';
-// if (file_exists($flag_file) && (time() - filemtime($flag_file) < 86400)) {
-//     $_SESSION['schema_check_ok'] = true;
-//     return;
-// }
+$flag_file = sys_get_temp_dir() . '/loja_schema_' . md5(__FILE__) . '.flag';
+if (file_exists($flag_file) && (time() - filemtime($flag_file) < 86400)) {
+    return;
+}
 
 // 1. Criar tabelas fundamentais se não existirem
 $queries_tables = [
@@ -210,5 +205,5 @@ foreach ($colunas_por_tabela as $tabela => $cols) {
 
 // Salva flag de sucesso
 $_SESSION['schema_check_ok'] = true;
-// @file_put_contents($flag_file, time());
+@file_put_contents($flag_file, time());
 ?>
