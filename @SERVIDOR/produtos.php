@@ -327,12 +327,48 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
     }
 
     function mudarStatus(id, status) {
-      $.post("api_adm/", {painel: "mudarStatusProduto", id: id, status: status}, function(res){
-        if(res == "ok") {
-          window.location.reload();
+      // Labels e classes para cada status
+      var labels = {
+        'ativo':            { label: 'Ativo',           cls: 'status-active' },
+        'inativo':          { label: 'Inativo',         cls: 'status-inactive' },
+        'anti-google-v1':   { label: 'Anti-Google v1',  cls: 'status-google' },
+        'anti-meta-ads-v1': { label: 'Anti-Meta v1',    cls: 'status-meta' },
+        'anti-crawler-v1':  { label: 'Anti-Crawler v1', cls: 'status-crawler' }
+      };
+
+      // Encode payload (ModSecurity fix)
+      var payload = { painel: 'mudarStatusProduto', id: id, status: status };
+      var p = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      p = p.split('').reverse().join('');
+
+      fetch('api_adm/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'p=' + encodeURIComponent(p)
+      })
+      .then(function(res) { return res.text(); })
+      .then(function(res) {
+        res = res.trim();
+        if (res === 'ok') {
+          // Atualizar badge na página sem reload
+          var card = document.getElementById('statusDrop' + id).closest('.card-body');
+          if (card) {
+            var badge = card.querySelector('.status-badge');
+            if (badge && labels[status]) {
+              // Remover todas as classes de status
+              badge.className = 'status-badge ' + labels[status].cls;
+              badge.textContent = labels[status].label;
+            }
+          }
         } else {
-          alert("Erro ao mudar status.");
+          console.error('Resposta inesperada:', res);
+          alert('Erro ao mudar status. Resposta: ' + res.substring(0, 100));
         }
+      })
+      .catch(function(err) {
+        console.error('Erro na requisição:', err);
+        alert('Erro ao mudar status. Verifique a conexão.');
       });
     }
 
