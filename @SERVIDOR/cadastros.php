@@ -331,9 +331,10 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
           } catch(e) {
               alert("Erro ao processar resposta do servidor. Verifique o console.");
               console.log("Response:", res);
-              console.log("Error:", e);
           }
       });
+    }
+
     function alternarStatusPagamento(id) {
       if(!confirm("Deseja alternar o status de pagamento deste cliente?")) return;
       $.post("api_adm/", {painel:"alternar_pagamento_confirmado", id: id}, function(res) {
