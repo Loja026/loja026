@@ -39,6 +39,24 @@ if ($cid !== '') {
     $cliente_result = mysqli_query($conn, "SELECT * FROM clientes WHERE id='$cid_safe' LIMIT 1");
     $cliente = ($cliente_result && mysqli_num_rows($cliente_result) > 0) ? mysqli_fetch_assoc($cliente_result) : [];
 }
+
+// Se o cliente encontrado pelo cid ou ip nao estiver com pagamento_confirmado=1, busca o registro anterior deste mesmo cliente que esteja PAGO
+if (!empty($cliente) && empty($cliente['pagamento_confirmado'])) {
+    $email_cli = mysqli_real_escape_string($conn, $cliente['email'] ?? '');
+    $cel_cli = mysqli_real_escape_string($conn, $cliente['celular'] ?? '');
+    if (!empty($email_cli) && $email_cli !== '-') {
+        $c_paid = mysqli_query($conn, "SELECT * FROM clientes WHERE email='$email_cli' AND pagamento_confirmado='1' ORDER BY id DESC LIMIT 1");
+        if ($c_paid && $row_paid = mysqli_fetch_assoc($c_paid)) {
+            $cliente = $row_paid;
+        }
+    } elseif (!empty($cel_cli)) {
+        $c_paid = mysqli_query($conn, "SELECT * FROM clientes WHERE celular='$cel_cli' AND pagamento_confirmado='1' ORDER BY id DESC LIMIT 1");
+        if ($c_paid && $row_paid = mysqli_fetch_assoc($c_paid)) {
+            $cliente = $row_paid;
+        }
+    }
+}
+
 if (empty($cliente)) {
     $cliente_ip = mysqli_real_escape_string($conn, base64_encode($_SERVER['REMOTE_ADDR'] ?? ''));
     if ($produto_codigo !== '') {
