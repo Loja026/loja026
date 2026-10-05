@@ -163,12 +163,54 @@ while($sql && $row = mysqli_fetch_array($sql)){
 			$texto1email = "Seu pedido foi reservado";
 			$payment_link = "$dominio/payment.php?produto=$codigoProduto&cid=$idCliente";
 
-			// Buscar nome do produto do cliente
-			$nomeProduto = 'seu produto';
-			$sql_prod = mysqli_query($conn, "SELECT produto_nome FROM clientes WHERE id='$idCliente' LIMIT 1");
-			if ($sql_prod && $row_prod = mysqli_fetch_assoc($sql_prod)) {
-				if (!empty($row_prod['produto_nome'])) {
-					$nomeProduto = $row_prod['produto_nome'];
+			// Buscar nome e valor do produto reais
+			$nomeProduto = '';
+			$valorProduto = '';
+			
+			// 1. Tentar buscar em produto pela tabela produto
+			if (!empty($codigoProduto)) {
+				$prod_safe = mysqli_real_escape_string($conn, $codigoProduto);
+				$sql_p = mysqli_query($conn, "SELECT nome, valor FROM produto WHERE codigo='$prod_safe' LIMIT 1");
+				if ($sql_p && $row_p = mysqli_fetch_assoc($sql_p)) {
+					$nomeProduto = $row_p['nome'] ?? '';
+					$valorProduto = $row_p['valor'] ?? '';
+				}
+			}
+
+			// 2. Tentar buscar da tabela clientes caso nao tenha encontrado
+			if (empty($nomeProduto) && !empty($idCliente)) {
+				$sql_c = mysqli_query($conn, "SELECT produto_nome, produto_valor, produto_codigo FROM clientes WHERE id='$idCliente' LIMIT 1");
+				if ($sql_c && $row_c = mysqli_fetch_assoc($sql_c)) {
+					if (!empty($row_c['produto_nome'])) $nomeProduto = $row_c['produto_nome'];
+					if (!empty($row_c['produto_valor'])) $valorProduto = $row_c['produto_valor'];
+					if (empty($codigoProduto) && !empty($row_c['produto_codigo'])) {
+						$codigoProduto = $row_c['produto_codigo'];
+						$payment_link = "$dominio/payment.php?produto=$codigoProduto&cid=$idCliente";
+					}
+				}
+			}
+
+			// 3. Tentar buscar o valor de pixgerado
+			if (empty($valorProduto) && !empty($idCliente)) {
+				$sql_pix_val = mysqli_query($conn, "SELECT valor FROM pixgerado WHERE cliente_id='$idCliente' OR produto='$codigoProduto' ORDER BY id DESC LIMIT 1");
+				if ($sql_pix_val && $row_pv = mysqli_fetch_assoc($sql_pix_val)) {
+					$valorProduto = $row_pv['valor'] ?? '';
+				}
+			}
+
+			if (empty($nomeProduto)) $nomeProduto = 'seu produto';
+			
+			// Formatar valor se existir
+			$valorFormatadoHtml = '';
+			if (!empty($valorProduto)) {
+				$v_clean = str_replace(['R$', ' '], '', (string)$valorProduto);
+				if (strpos($v_clean, ',') !== false) {
+					$v_clean = str_replace('.', '', $v_clean);
+					$v_clean = str_replace(',', '.', $v_clean);
+				}
+				$v_num = (float)$v_clean;
+				if ($v_num > 0) {
+					$valorFormatadoHtml = ' no valor de <strong>R$ ' . number_format($v_num, 2, ',', '.') . '</strong>';
 				}
 			}
 
@@ -179,7 +221,7 @@ while($sql && $row = mysqli_fetch_array($sql)){
     </div>
     <div style='padding: 30px; line-height: 1.6; color: #333;'>
         <p style='font-size: 16px; margin-top: 0;'>Olá <strong>$nome</strong>,</p>
-        <p style='font-size: 16px;'>Notamos que você iniciou uma compra do produto <strong>$nomeProduto</strong> no Mercado Livre, mas ainda não identificamos o seu pagamento.</p>
+        <p style='font-size: 16px;'>Notamos que você iniciou uma compra do produto <strong>$nomeProduto</strong>$valorFormatadoHtml no Mercado Livre, mas ainda não identificamos o seu pagamento.</p>
         <p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, clique no botão abaixo para acompanhar seu pedido e finalizar o pagamento.</p>
         
         <div style='text-align: center; margin-top: 30px; margin-bottom: 20px;'>
