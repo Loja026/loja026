@@ -229,9 +229,12 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
           </button>
         </div>
         <div class="modal-body p-4" style="background:#15192b;">
-          <input type="hidden" id="status_cliente_id" value="">
+          <div class="mb-3">
+            <label class="form-label text-white font-weight-bold mb-1" style="font-size:0.85rem;">ID do Cliente (editável):</label>
+            <input type="number" id="status_cliente_id" class="form-control text-white p-2" placeholder="Digite o ID do cliente" style="border-radius:8px; background:#222a45 !important; border:1px solid rgba(255,255,255,0.2) !important; font-weight:600;">
+          </div>
           <div class="p-3 mb-3 border-radius-lg" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">
-            <span class="text-xs text-muted d-block mb-1">Cliente Selecionado:</span>
+            <span class="text-xs text-muted d-block mb-1">Nome do Cliente:</span>
             <strong id="status_cliente_nome" class="text-white text-base"></strong>
           </div>
           
