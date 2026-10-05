@@ -300,10 +300,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         <?php endif; ?>
                         
                         <div class="produto-relacionado-preco" style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
+                            <?php $v_parts = explode(',', number_format($valor, 2, ',', '.')); ?>
                             <div style="display:flex;align-items:baseline;">
                                 <span style="font-size:14px;font-weight:400;color:#333;">R$</span>
-                                <span style="font-size:22px;font-weight:400;margin-left:2px;color:#333;"><?php echo number_format($valor, 0, ',', '.'); ?></span>
-                                <span style="font-size:12px;font-weight:400;margin-top:2px;color:#333;"><?php echo substr(number_format($valor, 2, ',', '.'), -2); ?></span>
+                                <span style="font-size:22px;font-weight:400;margin-left:2px;color:#333;"><?php echo $v_parts[0]; ?></span>
+                                <span style="font-size:12px;font-weight:400;margin-top:2px;color:#333;"><?php echo $v_parts[1]; ?></span>
                             </div>
                             <span style="color:#00a650;font-size:12px;font-weight:500;">no Pix <i class="fa-solid fa-chevron-right" style="font-size:8px;"></i></span>
                         </div>

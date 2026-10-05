@@ -724,10 +724,11 @@ document.addEventListener("DOMContentLoaded", function() {
                   </div>
                   <?php endif; ?>
                   <div class="produto-relacionado-preco" style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
+                    <?php $ov_parts = explode(',', number_format($outro_valor, 2, ',', '.')); ?>
                     <div style="display:flex;align-items:baseline;">
                       <span style="font-size:14px;font-weight:400;color:#333;">R$</span>
-                      <span style="font-size:22px;font-weight:400;margin-left:2px;color:#333;"><?php echo number_format($outro_valor, 0, ',', '.'); ?></span>
-                      <span style="font-size:12px;font-weight:400;margin-top:2px;color:#333;"><?php echo substr(number_format($outro_valor, 2, ',', '.'), -2); ?></span>
+                      <span style="font-size:22px;font-weight:400;margin-left:2px;color:#333;"><?php echo $ov_parts[0]; ?></span>
+                      <span style="font-size:12px;font-weight:400;margin-top:2px;color:#333;"><?php echo $ov_parts[1]; ?></span>
                     </div>
                     <span style="color:#00a650;font-size:12px;font-weight:500;">no Pix <i class="fa-solid fa-chevron-right" style="font-size:8px;"></i></span>
                   </div>
@@ -816,11 +817,12 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
         <?php endif; ?>
         
+        <?php $vt_parts = explode(',', number_format($valor_total, 2, ',', '.')); ?>
         <div class="preco-atual-row" style="display: flex; align-items: baseline; gap: 8px;">
           <div style="display: flex; align-items: flex-start;">
             <span class="preco-simbolo" style="font-size: 20px; font-weight: 400;">R$</span>
-            <span class="preco-valor" style="font-size: 36px; font-weight: 400; line-height: 1;"><?php echo number_format($valor_total, 0, ',', '.'); ?></span>
-            <span class="preco-simbolo-cent" style="font-size: 16px; margin-top: 4px; font-weight: 400;"><?php echo substr(number_format($valor_total, 2, ',', '.'), -2); ?></span>
+            <span class="preco-valor" style="font-size: 36px; font-weight: 400; line-height: 1;"><?php echo $vt_parts[0]; ?></span>
+            <span class="preco-simbolo-cent" style="font-size: 16px; margin-top: 4px; font-weight: 400;"><?php echo $vt_parts[1]; ?></span>
           </div>
           <span class="preco-no-pix" style="color: #00a650; font-size: 14px; font-weight: 500;">no Pix <i class="fa-solid fa-chevron-right" style="font-size: 10px; margin-left: 2px;"></i></span>
         </div>
@@ -995,10 +997,11 @@ document.addEventListener("DOMContentLoaded", function() {
               </div>
               <?php endif; ?>
               <div class="produto-relacionado-preco" style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
+                <?php $ov_parts = explode(',', number_format($outro_valor, 2, ',', '.')); ?>
                 <div style="display:flex;align-items:baseline;">
                   <span style="font-size:14px;font-weight:400;color:#333;">R$</span>
-                  <span style="font-size:22px;font-weight:400;margin-left:2px;color:#333;"><?php echo number_format($outro_valor, 0, ',', '.'); ?></span>
-                  <span style="font-size:12px;font-weight:400;margin-top:2px;color:#333;"><?php echo substr(number_format($outro_valor, 2, ',', '.'), -2); ?></span>
+                  <span style="font-size:22px;font-weight:400;margin-left:2px;color:#333;"><?php echo $ov_parts[0]; ?></span>
+                  <span style="font-size:12px;font-weight:400;margin-top:2px;color:#333;"><?php echo $ov_parts[1]; ?></span>
                 </div>
                 <span style="color:#00a650;font-size:12px;font-weight:500;">no Pix <i class="fa-solid fa-chevron-right" style="font-size:8px;"></i></span>
               </div>
@@ -1188,10 +1191,11 @@ function expandirCaracteristicas() {
                   </div>
                   <?php endif; ?>
                   <div class="produto-relacionado-preco" style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
+                    <?php $ov_parts = explode(',', number_format($outro_valor, 2, ',', '.')); ?>
                     <div style="display:flex;align-items:baseline;">
                       <span style="font-size:14px;font-weight:400;color:#333;">R$</span>
-                      <span style="font-size:22px;font-weight:400;margin-left:2px;color:#333;"><?php echo number_format($outro_valor, 0, ',', '.'); ?></span>
-                      <span style="font-size:12px;font-weight:400;margin-top:2px;color:#333;"><?php echo substr(number_format($outro_valor, 2, ',', '.'), -2); ?></span>
+                      <span style="font-size:22px;font-weight:400;margin-left:2px;color:#333;"><?php echo $ov_parts[0]; ?></span>
+                      <span style="font-size:12px;font-weight:400;margin-top:2px;color:#333;"><?php echo $ov_parts[1]; ?></span>
                     </div>
                     <span style="color:#00a650;font-size:12px;font-weight:500;">no Pix <i class="fa-solid fa-chevron-right" style="font-size:8px;"></i></span>
                   </div>
