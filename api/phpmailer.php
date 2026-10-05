@@ -337,11 +337,21 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 			$mail->Port = 587;
 
 			// Tenta usar um e-mail válido se tiver sido configurado em config ou extraido do login/terceiro parâmetro
-			$fromAddr = $MeuEmail;
-			if (!filter_var($fromAddr, FILTER_VALIDATE_EMAIL) || strpos(strtolower($fromAddr), '@smtp-brevo.com') !== false) {
-				if (!empty($config_email_remetente) && filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL)) {
-					$fromAddr = $config_email_remetente;
+			$fromAddr = '';
+			if (!empty($config_email_remetente) && filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL) && strpos(strtolower($config_email_remetente), '@smtp-brevo.com') === false) {
+				$fromAddr = $config_email_remetente;
+			} elseif (filter_var($MeuEmail, FILTER_VALIDATE_EMAIL) && strpos(strtolower($MeuEmail), '@smtp-brevo.com') === false) {
+				$fromAddr = $MeuEmail;
+			}
+			if (empty($fromAddr)) {
+				// Se ainda não tiver remetente válido, busca o primeiro e-mail válido cadastrado no banco
+				$q_em = mysqli_query($conn, "SELECT email FROM config WHERE email != '' AND email NOT LIKE '%smtp-brevo%' LIMIT 1");
+				if ($q_em && $r_em = mysqli_fetch_assoc($q_em)) {
+					$fromAddr = trim($r_em['email']);
 				}
+			}
+			if (empty($fromAddr)) {
+				$fromAddr = $MeuEmail;
 			}
 			$mail->setFrom($fromAddr, "$loja");
 		} else {
