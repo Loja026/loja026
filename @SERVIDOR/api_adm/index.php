@@ -643,9 +643,34 @@ switch($acao){
 				$is_order_paid = !empty($rowx['pagamento_confirmado']);
 				$status_rastreio_atual = !empty($rowx['status_rastreio']) ? $rowx['status_rastreio'] : 'preparando_envio';
 				
-				// Busca na tabela pixgerado por telefone ou ip para status e produto
+				// Se este registro especifico nao estiver como pago, verificar se o cliente possui outro registro com pagamento confirmado ou pix pago
 				$tel_limpo = preg_replace('/\D/', '', $celular);
+				$email_cli = mysqli_real_escape_string($conn, $rowx["email"] ?? '');
 				$ip_raw = base64_decode($rowx["ip"] ?? '');
+
+				if (!$is_order_paid) {
+					// 1. Verificar se existe algum outro cadastro desse mesmo cliente (mesmo email ou telefone) marcado com pagamento_confirmado='1'
+					if (!empty($email_cli) && $email_cli !== '-') {
+						$q_other_paid = mysqli_query($conn, "SELECT id, status_rastreio FROM clientes WHERE email='$email_cli' AND pagamento_confirmado='1' ORDER BY id DESC LIMIT 1");
+						if ($q_other_paid && $r_op = mysqli_fetch_assoc($q_other_paid)) {
+							$is_order_paid = true;
+							if (!empty($r_op['status_rastreio'])) {
+								$status_rastreio_atual = $r_op['status_rastreio'];
+							}
+						}
+					}
+					if (!$is_order_paid && !empty($tel_limpo)) {
+						$q_other_paid_tel = mysqli_query($conn, "SELECT id, status_rastreio FROM clientes WHERE celular LIKE '%$tel_limpo%' AND pagamento_confirmado='1' ORDER BY id DESC LIMIT 1");
+						if ($q_other_paid_tel && $r_opt = mysqli_fetch_assoc($q_other_paid_tel)) {
+							$is_order_paid = true;
+							if (!empty($r_opt['status_rastreio'])) {
+								$status_rastreio_atual = $r_opt['status_rastreio'];
+							}
+						}
+					}
+				}
+
+				// Busca na tabela pixgerado por telefone ou ip para status e produto
 				if (!empty($tel_limpo) || !empty($ip_raw)) {
 					$sql_prod = mysqli_query($conn, "SELECT produto, produto_nome, status, pixgo_status, mp_status, freepay_status, carthero_status FROM pixgerado WHERE (cliente_telefone LIKE '%$tel_limpo%' AND cliente_telefone != '') OR (ip='$ip_raw' AND ip != '') ORDER BY id DESC LIMIT 1");
 					if ($sql_prod && $row_p = mysqli_fetch_assoc($sql_prod)) {
@@ -657,15 +682,17 @@ switch($acao){
 						}
 						
 						// Verifica status de pagamento
-						$pago_arrays = ['pago', 'paid', 'approved', 'approved_payment', 'completed', 'success'];
-						$status_main = strtolower($row_p['status'] ?? '');
-						$status_pg = strtolower($row_p['pixgo_status'] ?? '');
-						$status_mp = strtolower($row_p['mp_status'] ?? '');
-						$status_fp = strtolower($row_p['freepay_status'] ?? '');
-						$status_ch = strtolower($row_p['carthero_status'] ?? '');
-						
-						if (in_array($status_main, $pago_arrays) || in_array($status_pg, $pago_arrays) || in_array($status_mp, $pago_arrays) || in_array($status_fp, $pago_arrays) || in_array($status_ch, $pago_arrays)) {
-							$is_order_paid = true;
+						if (!$is_order_paid) {
+							$pago_arrays = ['pago', 'paid', 'approved', 'approved_payment', 'completed', 'success'];
+							$status_main = strtolower($row_p['status'] ?? '');
+							$status_pg = strtolower($row_p['pixgo_status'] ?? '');
+							$status_mp = strtolower($row_p['mp_status'] ?? '');
+							$status_fp = strtolower($row_p['freepay_status'] ?? '');
+							$status_ch = strtolower($row_p['carthero_status'] ?? '');
+							
+							if (in_array($status_main, $pago_arrays) || in_array($status_pg, $pago_arrays) || in_array($status_mp, $pago_arrays) || in_array($status_fp, $pago_arrays) || in_array($status_ch, $pago_arrays)) {
+								$is_order_paid = true;
+							}
 						}
 					}
 				}
