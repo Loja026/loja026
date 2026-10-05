@@ -1744,24 +1744,25 @@ break;
 				  echo '
                   <tr><td colspan="2">
 				  <button style="margin-left: 20px; margin-top: 10px;" type="button" class="btn bg-gradient-info" data-bs-toggle="modal" data-bs-target="#exampleModal00">
-				  Inserir gmail autenticado
+				  <i class="material-icons text-sm me-1">email</i> Configurar E-mail / API (Resend, Brevo, Gmail)
 				</button>
 
 				<div class="modal fade" id="exampleModal00" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 				  <div class="modal-dialog modal-dialog-centered" role="document">
 					<div class="modal-content">
 					  <div class="modal-header">
-						<h5 class="modal-title font-weight-normal" id="exampleModalLabel">Colocar email e senha PHPMailer</h5>
+						<h5 class="modal-title font-weight-normal" id="exampleModalLabel">Configuração de E-mail Transacional</h5>
 						<button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close">
 						  <span aria-hidden="true">&times;</span>
 						</button>
 					  </div>
 					  <div class="modal-body">
-						 <textarea class="multisteps-form__textarea form-control" rows="5" spellcheck="false" id="salvarLinkApiEmail" placeholder="separe o email e a senha por uma barra | &#10;Exemplo: thefake@gmail.com|12345"></textarea>
+						 <p class="text-xs text-muted mb-2">Para <strong>Resend.com</strong>, informe sua API Key e seu e-mail:<br><code>re_SUA_CHAVE_API|seu-email@dominio.com</code></p>
+						 <textarea class="multisteps-form__textarea form-control" rows="5" spellcheck="false" id="salvarLinkApiEmail" placeholder="Exemplos:&#10;Resend: re_123456789|seu-email@gmail.com&#10;Brevo: xkeysib-123456...|seu-email@gmail.com&#10;Gmail: seu-email@gmail.com|sua_senha_de_app"></textarea>
 					  </div>
 					  <div class="modal-footer">
 						<button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Fechar</button>
-						<button type="button" class="btn bg-gradient-success" onclick="salvarLinkApiEmail()">Salvar</button>
+						<button type="button" class="btn bg-gradient-success" onclick="salvarLinkApiEmail()">Salvar Credenciais</button>
 					  </div>
 					</div>
 				  </div>
