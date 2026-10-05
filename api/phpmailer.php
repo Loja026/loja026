@@ -64,7 +64,16 @@ while($sql && $row = mysqli_fetch_array($sql)){
 		$MinhaSenha = trim($recorte[1] ?? '');
 		$config_email_remetente = trim($recorte[2] ?? '');
 
-		if (empty($MeuEmail) || empty($MinhaSenha)) {
+		// Se o primeiro valor for uma API Key da Brevo (xkeysib-...) e não houver segundo valor
+		if (strpos($MeuEmail, 'xkeysib-') === 0 && empty($MinhaSenha)) {
+			$MinhaSenha = $MeuEmail;
+		} elseif (strpos($MeuEmail, 'xkeysib-') === 0 && !empty($MinhaSenha) && empty($config_email_remetente)) {
+			// Formato: xkeysib-...|remetente@email.com
+			$config_email_remetente = $MinhaSenha;
+			$MinhaSenha = $MeuEmail;
+		}
+
+		if (empty($MeuEmail)) {
 		    error_log('[Email Debug] Credenciais SMTP ausentes.');
 		    echo 'Erro: Credenciais SMTP não configuradas.';
 		    return;
