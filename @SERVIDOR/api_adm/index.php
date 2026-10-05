@@ -402,6 +402,27 @@ switch($acao){
         echo json_encode($r ? ['ok'=>true] : ['ok'=>false,'error'=>mysqli_error($conn)]);
     break;
 
+    case "alternar_pagamento_confirmado":
+        $id = (int)($_POST['id'] ?? 0);
+        if (!$id) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['ok' => false, 'error' => 'ID inválido']);
+            break;
+        }
+
+        $q_c = mysqli_query($conn, "SELECT pagamento_confirmado FROM clientes WHERE id='$id' LIMIT 1");
+        if ($q_c && $r_c = mysqli_fetch_assoc($q_c)) {
+            $novo_status = empty($r_c['pagamento_confirmado']) ? '1' : '0';
+            $r_upd = mysqli_query($conn, "UPDATE clientes SET pagamento_confirmado='$novo_status', data_pagamento=IF('$novo_status'='1', NOW(), NULL) WHERE id='$id'");
+            
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['ok' => true, 'novo_status' => (int)$novo_status]);
+        } else {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['ok' => false, 'error' => 'Cliente não encontrado']);
+        }
+    break;
+
     case "atualizar_status_rastreio":
         $id = (int)($_POST['id'] ?? 0);
         $status_rastreio = trim((string)($_POST['status_rastreio'] ?? ''));
@@ -651,10 +672,10 @@ switch($acao){
 				
 				$btn_status_rastreio = '';
 				if ($is_order_paid) {
-					$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-success" title="Pago" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:2px;"><i class="material-icons" style="font-size:12px;">check_circle</i> Pago</span>';
+					$status_pagamento_badge = '<span onclick="alternarStatusPagamento('.(int)$id.')" class="badge badge-sm bg-gradient-success" title="Clique para alterar para Reservado" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:2px; cursor:pointer;"><i class="material-icons" style="font-size:12px;">check_circle</i> Pago</span>';
 					$btn_status_rastreio = '<button type="button" class="btn btn-xs bg-gradient-info mb-0 px-2 py-1 text-xxs font-weight-bold d-inline-flex align-items-center gap-1" style="white-space:nowrap;" onclick="abrirModalStatus('.(int)$id.', \''.addslashes($status_rastreio_atual).'\', \''.addslashes($nome).'\')" title="Atualizar Status do Rastreio"><i class="material-icons" style="font-size:12px;">local_shipping</i> Status Rastreio</button>';
 				} else {
-					$status_pagamento_badge = '<span class="badge badge-sm bg-gradient-warning" title="Reservado / Aguardando" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:2px;"><i class="material-icons" style="font-size:12px;">schedule</i> Reservado</span>';
+					$status_pagamento_badge = '<span onclick="alternarStatusPagamento('.(int)$id.')" class="badge badge-sm bg-gradient-warning" title="Clique para alterar para Pago" style="padding: 4px 8px; display:inline-flex; align-items:center; gap:2px; cursor:pointer;"><i class="material-icons" style="font-size:12px;">schedule</i> Reservado</span>';
 				}
 				
 				// Se ainda não achou cod_p mas tem o nome do produto, busca em produto por nome

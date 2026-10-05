@@ -334,6 +334,20 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
               console.log("Error:", e);
           }
       });
+    function alternarStatusPagamento(id) {
+      if(!confirm("Deseja alternar o status de pagamento deste cliente?")) return;
+      $.post("api_adm/", {painel:"alternar_pagamento_confirmado", id: id}, function(res) {
+          try {
+              var r = typeof res === 'string' ? JSON.parse(res) : res;
+              if(r.ok) {
+                  carregarCadastros();
+              } else {
+                  alert("Erro ao alterar status: " + (r.error || 'Tente novamente.'));
+              }
+          } catch(e) {
+              carregarCadastros();
+          }
+      });
     }
 
     function abrirModalStatus(id, currentStatus, nome) {
