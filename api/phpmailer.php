@@ -276,9 +276,9 @@ if (strtolower($MeuEmail) === 'sendpulse') {
         error_log("[Email Debug] Erro SendPulse API - HTTP $httpCode: $response");
 		echo "Erro ao enviar mensagem via SendPulse API. Código: $httpCode Resposta: $response";
 	}
-} elseif (strpos($MinhaSenha, 'xkeysib-') === 0 || strpos(strtolower($MeuEmail), 'brevo') !== false || strpos(strtolower($emailPHPMAILER), 'xkeysib-') !== false) {
-    // Usar a API HTTP do Brevo (Porta 443) em vez de SMTP para evitar bloqueios
-    $apiKey = (strpos($MinhaSenha, 'xkeysib-') === 0) ? $MinhaSenha : ((strpos($MeuEmail, 'xkeysib-') === 0) ? $MeuEmail : trim($emailPHPMAILER));
+} elseif (strpos($MinhaSenha, 'xkeysib-') === 0 || strpos(strtolower($emailPHPMAILER), 'xkeysib-') !== false) {
+    // Usar a API HTTP do Brevo (Porta 443) caso a chave informada seja uma API Key (xkeysib-...)
+    $apiKey = (strpos($MinhaSenha, 'xkeysib-') === 0) ? $MinhaSenha : trim($emailPHPMAILER);
     $senderEmail = filter_var($MeuEmail, FILTER_VALIDATE_EMAIL) ? $MeuEmail : ('nao-responda@' . ($_SERVER['HTTP_HOST'] ?? 'loja.com'));
     
 	$payload = json_encode([
@@ -323,6 +323,14 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 			$mail->Password = $MinhaSenha;
 			$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
 			$mail->Port = 465;
+			$mail->setFrom($MeuEmail, "$loja");
+		} elseif (strpos(strtolower($MeuEmail), 'smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false || strpos(strtolower($MinhaSenha), 'xsmtpsib-') === 0) {
+			$mail->Host = 'smtp-relay.brevo.com';
+			$mail->Username = $MeuEmail;
+			$mail->Password = $MinhaSenha;
+			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+			$mail->Port = 587;
+			// O remetente precisa ser um e-mail válido (ex: seu e-mail de login da Brevo) ou o proprio login
 			$mail->setFrom($MeuEmail, "$loja");
 		} else {
 			// Default para Resend (Railway permite porta 2525)
