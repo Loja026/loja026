@@ -281,10 +281,26 @@ if (strtolower($MeuEmail) === 'sendpulse') {
         error_log("[Email Debug] Erro SendPulse API - HTTP $httpCode: $response");
 		echo "Erro ao enviar mensagem via SendPulse API. Código: $httpCode Resposta: $response";
 	}
-} elseif (strpos($MinhaSenha, 'xkeysib-') === 0 || strpos(strtolower($emailPHPMAILER), 'xkeysib-') !== false) {
-    // Usar a API HTTP do Brevo (Porta 443) caso a chave informada seja uma API Key (xkeysib-...)
-    $apiKey = (strpos($MinhaSenha, 'xkeysib-') === 0) ? $MinhaSenha : trim($emailPHPMAILER);
-    $senderEmail = filter_var($MeuEmail, FILTER_VALIDATE_EMAIL) ? $MeuEmail : ('nao-responda@' . ($_SERVER['HTTP_HOST'] ?? 'loja.com'));
+} elseif (strpos($MinhaSenha, 'xkeysib-') === 0 || strpos(strtolower($MeuEmail), 'smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false || strpos(strtolower($emailPHPMAILER), 'xkeysib-') !== false) {
+    // Usar API HTTP do Brevo (Porta 443 HTTPS) para evitar bloqueio de portas SMTP (110/587) na hospedagem
+    $apiKey = (strpos($MinhaSenha, 'xkeysib-') === 0) ? $MinhaSenha : ((strpos($MeuEmail, 'xkeysib-') === 0) ? $MeuEmail : trim($emailPHPMAILER));
+    
+    // Determinar o e-mail do remetente
+    $senderEmail = '';
+    if (!empty($config_email_remetente) && filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL) && strpos(strtolower($config_email_remetente), '@smtp-brevo.com') === false) {
+        $senderEmail = $config_email_remetente;
+    } elseif (filter_var($MeuEmail, FILTER_VALIDATE_EMAIL) && strpos(strtolower($MeuEmail), '@smtp-brevo.com') === false) {
+        $senderEmail = $MeuEmail;
+    }
+    if (empty($senderEmail)) {
+        $q_em = mysqli_query($conn, "SELECT email FROM config WHERE email != '' AND email NOT LIKE '%smtp-brevo%' LIMIT 1");
+        if ($q_em && $r_em = mysqli_fetch_assoc($q_em)) {
+            $senderEmail = trim($r_em['email']);
+        }
+    }
+    if (empty($senderEmail)) {
+        $senderEmail = 'nao-responda@' . ($_SERVER['HTTP_HOST'] ?? 'loja.com');
+    }
     
 	$payload = json_encode([
 		"sender" => ["name" => $loja, "email" => $senderEmail],
