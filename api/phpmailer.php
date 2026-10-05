@@ -62,6 +62,8 @@ while($sql && $row = mysqli_fetch_array($sql)){
 		$recorte = explode("|", $emailPHPMAILER ?? '');
 		$MeuEmail = trim($recorte[0] ?? '');
 		$MinhaSenha = trim($recorte[1] ?? '');
+		$config_email_remetente = trim($recorte[2] ?? '');
+
 		if (empty($MeuEmail) || empty($MinhaSenha)) {
 		    error_log('[Email Debug] Credenciais SMTP ausentes.');
 		    echo 'Erro: Credenciais SMTP não configuradas.';
@@ -71,6 +73,9 @@ while($sql && $row = mysqli_fetch_array($sql)){
 		$sql = mysqli_query($conn, "SELECT * from config");
 		while($sql && $row = mysqli_fetch_array($sql)){   	   
 			$loja = $row["nome"];
+			if (empty($config_email_remetente) && !empty($row["email"])) {
+				$config_email_remetente = trim($row["email"]);
+			}
 		}
 			
 		header('Content-type: text/html; charset=utf-8');
@@ -330,8 +335,15 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 			$mail->Password = $MinhaSenha;
 			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
 			$mail->Port = 587;
-			// O remetente precisa ser um e-mail válido (ex: seu e-mail de login da Brevo) ou o proprio login
-			$mail->setFrom($MeuEmail, "$loja");
+
+			// Tenta usar um e-mail válido se tiver sido configurado em config ou extraido do login/terceiro parâmetro
+			$fromAddr = $MeuEmail;
+			if (!filter_var($fromAddr, FILTER_VALIDATE_EMAIL) || strpos(strtolower($fromAddr), '@smtp-brevo.com') !== false) {
+				if (!empty($config_email_remetente) && filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL)) {
+					$fromAddr = $config_email_remetente;
+				}
+			}
+			$mail->setFrom($fromAddr, "$loja");
 		} else {
 			// Default para Resend (Railway permite porta 2525)
 			$mail->Host = 'smtp.resend.com';
