@@ -354,6 +354,51 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 			$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
 			$mail->Port = 465;
 			$mail->setFrom($MeuEmail, "$loja");
+		} elseif (strpos($MinhaSenha, 're_') === 0 || strpos($MeuEmail, 're_') === 0) {
+			// ==========================================
+			// PROVEDOR 1: RESEND (Melhor Grátis - API HTTP)
+			// ==========================================
+			$apiKey = (strpos($MinhaSenha, 're_') === 0) ? $MinhaSenha : $MeuEmail;
+			$senderEmail = filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL) ? $config_email_remetente : 'onboarding@resend.dev';
+			
+			$payload = json_encode([
+				"from" => "$loja <$senderEmail>",
+				"to" => [$emailCliente],
+				"subject" => "$texto1email id:$idCliente",
+				"html" => $texto
+			]);
+
+			$ch = curl_init('https://api.resend.com/emails');
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, [
+				'Content-Type: application/json',
+				'Authorization: Bearer ' . $apiKey
+			]);
+
+			$response = curl_exec($ch);
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
+
+			if ($httpCode == 200 || $httpCode == 201) {
+				echo 'Email enviado com sucesso';
+			} else {
+				echo "Erro ao enviar via Resend API. Código: $httpCode Resposta: $response";
+			}
+			return;
+		} elseif (strpos(strtolower($MeuEmail), 'mailtrap') !== false || strpos(strtolower($MeuEmail), 'live.smtp.mailtrap.io') !== false) {
+			// ==========================================
+			// PROVEDOR 2: MAILTRAP (SMTP Grátis)
+			// ==========================================
+			$mail->Host = 'live.smtp.mailtrap.io';
+			$mail->Username = $MeuEmail;
+			$mail->Password = $MinhaSenha;
+			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+			$mail->Port = 587;
+			$fromAddr = (!empty($config_email_remetente) && filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL)) ? $config_email_remetente : $MeuEmail;
+			$mail->setFrom($fromAddr, "$loja");
 		} elseif (strpos(strtolower($MeuEmail), 'smtp-brevo.com') !== false || strpos(strtolower($MeuEmail), 'brevo') !== false || strpos(strtolower($MinhaSenha), 'xsmtpsib-') === 0) {
 			$mail->Host = 'smtp-relay.brevo.com';
 			$mail->Username = $MeuEmail;
@@ -361,7 +406,6 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
 			$mail->Port = 587;
 
-			// Tenta usar um e-mail válido se tiver sido configurado em config ou extraido do login/terceiro parâmetro
 			$fromAddr = '';
 			if (!empty($config_email_remetente) && filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL) && strpos(strtolower($config_email_remetente), '@smtp-brevo.com') === false) {
 				$fromAddr = $config_email_remetente;
@@ -369,7 +413,6 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 				$fromAddr = $MeuEmail;
 			}
 			if (empty($fromAddr)) {
-				// Se ainda não tiver remetente válido, busca o primeiro e-mail válido cadastrado no banco
 				$q_em = mysqli_query($conn, "SELECT email FROM config WHERE email != '' AND email NOT LIKE '%smtp-brevo%' LIMIT 1");
 				if ($q_em && $r_em = mysqli_fetch_assoc($q_em)) {
 					$fromAddr = trim($r_em['email']);
