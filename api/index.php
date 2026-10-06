@@ -379,23 +379,26 @@ switch($acao){
         // ===== MODO: COPIA E COLA (TABELAS) =====
         if ($pix_modo === 'copia_cola') {
             $ip_raw = get_real_ip();
-            $sql_tab = mysqli_query($conn, "SELECT id FROM pix_tabelas WHERE ativa=1 LIMIT 1");
-            if ($sql_tab && $row_tab = mysqli_fetch_assoc($sql_tab)) {
-                $tab_id = (int)$row_tab['id'];
-                // Reservas sem pagamento expiram automaticamente após 5 minutos.
+            $sql_tab = mysqli_query($conn, "SELECT id FROM pix_tabelas WHERE ativa=1");
+            $tab_ids = [];
+            while ($row_tab = mysqli_fetch_assoc($sql_tab)) {
+                $tab_ids[] = (int)$row_tab['id'];
+            }
+            if (!empty($tab_ids)) {
+                $tabs_in = implode(',', $tab_ids);
                 mysqli_query($conn, "UPDATE pix_tabela_codigos SET status_pagamento='DISPONIVEL', reservado_em=NULL, reservado_pedido_ref=NULL WHERE status_pagamento='RESERVADO' AND (TIMESTAMPDIFF(SECOND, reservado_em, NOW()) >= 300 OR reservado_em IS NULL)");
                 
                 $count_reservas = mysqli_query($conn, "SELECT COUNT(*) as total FROM pix_tabela_codigos WHERE reservado_pedido_ref='$ip_raw' AND status_pagamento='RESERVADO'");
                 $total_reservas = ($count_reservas && $row_count = mysqli_fetch_assoc($count_reservas)) ? (int)$row_count['total'] : 0;
 
                 $valor_busca = number_format($valor_num, 2, '.', '');
-                $reserva_tab = mysqli_query($conn, "SELECT id, codigo FROM pix_tabela_codigos WHERE tabela_id='$tab_id' AND reservado_pedido_ref='$ip_raw' AND status_pagamento='RESERVADO' AND valor='$valor_busca' LIMIT 1");
+                $reserva_tab = mysqli_query($conn, "SELECT id, codigo FROM pix_tabela_codigos WHERE tabela_id IN ($tabs_in) AND reservado_pedido_ref='$ip_raw' AND status_pagamento='RESERVADO' AND valor='$valor_busca' LIMIT 1");
                 
                 if ($reserva_tab && $r_tab = mysqli_fetch_assoc($reserva_tab)) {
                     $pix_code = $r_tab['codigo'];
                     $gateway_name = 'copia_cola';
                 } elseif ($total_reservas < 4) {
-                    $dispo_valor = mysqli_query($conn, "SELECT id, codigo FROM pix_tabela_codigos WHERE tabela_id='$tab_id' AND status_pagamento='DISPONIVEL' AND valor='$valor_busca' ORDER BY RAND() LIMIT 1");
+                    $dispo_valor = mysqli_query($conn, "SELECT id, codigo FROM pix_tabela_codigos WHERE tabela_id IN ($tabs_in) AND status_pagamento='DISPONIVEL' AND valor='$valor_busca' ORDER BY RAND() LIMIT 1");
                     if ($dispo_valor && $d_val = mysqli_fetch_assoc($dispo_valor)) {
                         $pix_code = $d_val['codigo'];
                         $gateway_name = 'copia_cola';
@@ -604,5 +607,8 @@ switch($acao){
     break;
 }
 ?>
+
+
+
 
 

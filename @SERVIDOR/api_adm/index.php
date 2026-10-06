@@ -295,11 +295,17 @@ switch($acao){
     case "pix_tabela_ativar":
         header('Content-Type: application/json; charset=utf-8');
         $id_tab = (int)($_POST['id'] ?? 0);
-        if (!$id_tab) { echo json_encode(['ok'=>false,'error'=>'ID invǭlido']); break; }
-        // Desativar todas
-        mysqli_query($conn, "UPDATE pix_tabelas SET ativa=0");
-        // Ativar a selecionada
+        if (!$id_tab) { echo json_encode(['ok'=>false,'error'=>'ID inválido']); break; }
+        // Não desativa as outras para permitir múltiplas ativas
         $r = mysqli_query($conn, "UPDATE pix_tabelas SET ativa=1 WHERE id='$id_tab'");
+        echo json_encode($r ? ['ok'=>true] : ['ok'=>false,'error'=>mysqli_error($conn)]);
+    break;
+
+    case "pix_tabela_desativar":
+        header('Content-Type: application/json; charset=utf-8');
+        $id_tab = (int)($_POST['id'] ?? 0);
+        if (!$id_tab) { echo json_encode(['ok'=>false,'error'=>'ID inválido']); break; }
+        $r = mysqli_query($conn, "UPDATE pix_tabelas SET ativa=0 WHERE id='$id_tab'");
         echo json_encode($r ? ['ok'=>true] : ['ok'=>false,'error'=>mysqli_error($conn)]);
     break;
 

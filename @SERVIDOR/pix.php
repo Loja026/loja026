@@ -503,6 +503,10 @@ $pix_max_itens = $pix['pix_max_itens'] ?? 4;
                               <button type="button" class="btn btn-sm bg-gradient-success" onclick="pixTabelaAtivar(<?php echo $tab['id']; ?>)">
                                 <i class="material-icons text-sm">check_circle</i> Usar esta
                               </button>
+                            <?php else: ?>
+                              <button type="button" class="btn btn-sm bg-gradient-danger" onclick="pixTabelaDesativar(<?php echo $tab['id']; ?>)">
+                                <i class="material-icons text-sm">cancel</i> Desativar
+                              </button>
                             <?php endif; ?>
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="pixTabelaRenomearModal(<?php echo $tab['id']; ?>, '<?php echo addslashes(htmlspecialchars($tab['nome'])); ?>')">
                               <i class="material-icons text-sm">edit</i> Renomear
@@ -939,6 +943,18 @@ $pix_max_itens = $pix['pix_max_itens'] ?? 4;
         setTimeout(function(){ window.location.reload(); }, 800);
       } else {
         showError(r.error || 'Erro ao ativar tabela.');
+      }
+    });
+  }
+
+  // Desativar tabela
+  function pixTabelaDesativar(id) {
+    apiAdm({ painel: 'pix_tabela_desativar', id: id }, function(r) {
+      if (r.ok) {
+        showSuccess('Tabela desativada!');
+        setTimeout(function(){ window.location.reload(); }, 800);
+      } else {
+        showError(r.error || 'Erro ao desativar tabela.');
       }
     });
   }
