@@ -446,6 +446,11 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 					try {
 						var r = typeof res === 'string' ? JSON.parse(res) : res;
 						if(r.ok) {
+							// Se o usuário digitou o ID do PIX, corrige para o ID real do cliente
+							if (r.real_id && r.real_id != id) {
+								$('#status_cliente_id').val(r.real_id);
+							}
+							
 							$('#status_cliente_nome').text(r.nome || 'Cliente');
 							var validStatuses = ['preparando_envio', 'pedido_solicitado', 'enviado_transportadora', 'em_transito', 'centro_distribuicao', 'rota_entrega', 'entregue', 'ausente'];
 							
@@ -478,6 +483,9 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 							}
 						} else {
 							$('#status_cliente_nome').text('Cliente não encontrado');
+							$('#select_status_rastreio option').each(function() {
+								$(this).text($(this).text().replace(/✅ /g, ''));
+							});
 						}
 					} catch(e) {}
 				});

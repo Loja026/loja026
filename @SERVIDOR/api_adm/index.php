@@ -884,14 +884,48 @@ switch($acao){
 	case "buscar_cliente_status":
 		$id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 		if ($id > 0) {
-			$sql = mysqli_query($conn, "SELECT nome, status_rastreio FROM clientes WHERE id='$id' LIMIT 1");
+			// Tenta primeiro no clientes direto
+			$sql = mysqli_query($conn, "SELECT id, nome, status_rastreio FROM clientes WHERE id='$id' LIMIT 1");
 			if ($sql && $row = mysqli_fetch_assoc($sql)) {
 				echo json_encode([
 					'ok' => true,
+					'real_id' => $row['id'],
 					'nome' => $row['nome'],
 					'status_rastreio' => $row['status_rastreio']
 				]);
 				exit;
+			}
+			
+			// Se não achou em clientes, o usuário pode ter digitado o ID do PIX! 
+			// Vamos buscar no pixgerado e encontrar o cliente correspondente.
+			$sql_pix = mysqli_query($conn, "SELECT ip, cliente_telefone FROM pixgerado WHERE id='$id' LIMIT 1");
+			if ($sql_pix && $rp = mysqli_fetch_assoc($sql_pix)) {
+				$ip_raw = $rp['ip'] ?? '';
+				$tel = $rp['cliente_telefone'] ?? '';
+				
+				$conds = [];
+				if (!empty($ip_raw)) {
+					$ip_encoded = base64_encode($ip_raw);
+					$conds[] = "ip='$ip_encoded'";
+				}
+				if (!empty($tel)) {
+					$tel_limpo = preg_replace('/\D/', '', $tel);
+					$conds[] = "celular LIKE '%$tel_limpo%'";
+				}
+				
+				if (!empty($conds)) {
+					$where = implode(" OR ", $conds);
+					$sql_c = mysqli_query($conn, "SELECT id, nome, status_rastreio FROM clientes WHERE ($where) ORDER BY id DESC LIMIT 1");
+					if ($sql_c && $row_c = mysqli_fetch_assoc($sql_c)) {
+						echo json_encode([
+							'ok' => true,
+							'real_id' => $row_c['id'],
+							'nome' => $row_c['nome'],
+							'status_rastreio' => $row_c['status_rastreio']
+						]);
+						exit;
+					}
+				}
 			}
 		}
 		echo json_encode(['ok' => false]);
