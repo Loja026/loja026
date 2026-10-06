@@ -439,6 +439,24 @@ switch($acao){
 
         $q_c = mysqli_query($conn, "SELECT * FROM clientes WHERE id='$id' LIMIT 1");
         if ($q_c && $r_c = mysqli_fetch_assoc($q_c)) {
+            // Sincroniza o status para outros cadastros do mesmo cliente (mesmo email ou telefone)
+            // Isso previne o bug onde a tabela puxa o status de uma linha 'paga' antiga que não foi atualizada.
+            $email_c = mysqli_real_escape_string($conn, $r_c['email'] ?? '');
+            $tel_c = preg_replace('/\D/', '', $r_c['celular'] ?? '');
+            
+            $conds = [];
+            if (!empty($email_c) && $email_c !== '-') {
+                $conds[] = "email='$email_c'";
+            }
+            if (!empty($tel_c)) {
+                $conds[] = "celular LIKE '%$tel_c%'";
+            }
+            
+            if (!empty($conds)) {
+                $where = implode(" OR ", $conds);
+                mysqli_query($conn, "UPDATE clientes SET status_rastreio='$status_safe', data_status_rastreio=NOW() WHERE ($where)");
+            }
+
             if (!empty($r_c['ip'])) {
                 $raw_ip = base64_decode($r_c['ip']);
                 $ip_safe = mysqli_real_escape_string($conn, $raw_ip);
