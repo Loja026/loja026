@@ -365,8 +365,8 @@ if (strtolower($MeuEmail) === 'sendpulse') {
 			// PROVEDOR 1: RESEND (Melhor Grátis - API HTTP)
 			// ==========================================
 			$apiKey = (strpos($MinhaSenha, 're_') === 0) ? $MinhaSenha : $MeuEmail;
-			// Após verificar o domínio casaecozinha.casa no Resend, usar email do domínio verificado
-			$senderEmail = filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL) ? $config_email_remetente : 'noreply@casaecozinha.casa';
+			// Após verificar o domínio casaecozinha.casa no Resend, usar email do domínio verificado (pedidos para evitar filtros de spam)
+			$senderEmail = filter_var($config_email_remetente, FILTER_VALIDATE_EMAIL) ? $config_email_remetente : 'pedidos@casaecozinha.casa';
 			
 			$payload = json_encode([
 				"from" => "$loja <$senderEmail>",
