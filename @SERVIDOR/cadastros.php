@@ -375,7 +375,27 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
       $('#status_cliente_nome').text(nome || 'Cliente');
       
       var validStatuses = ['preparando_envio', 'pedido_solicitado', 'enviado_transportadora', 'em_transito', 'centro_distribuicao', 'rota_entrega', 'entregue', 'ausente'];
-      if (currentStatus && validStatuses.indexOf(currentStatus) !== -1) {
+      var currentIndex = validStatuses.indexOf(currentStatus);
+      
+      $('#select_status_rastreio option').each(function() {
+          var optVal = $(this).val();
+          var optText = $(this).text().replace(/✅ /g, '');
+          
+          if (currentIndex !== -1) {
+              var optIndex = validStatuses.indexOf(optVal);
+              if (optIndex <= currentIndex && optVal !== 'ausente' && currentStatus !== 'ausente') {
+                  $(this).text('✅ ' + optText);
+              } else if (optVal === 'ausente' && currentStatus === 'ausente') {
+                  $(this).text('✅ ' + optText);
+              } else {
+                  $(this).text(optText);
+              }
+          } else {
+              $(this).text(optText);
+          }
+      });
+
+      if (currentStatus && currentIndex !== -1) {
         $('#select_status_rastreio').val(currentStatus);
       } else {
         $('#select_status_rastreio').val('preparando_envio');
@@ -448,7 +468,30 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 						if(r.ok) {
 							$('#status_cliente_nome').text(r.nome || 'Cliente');
 							var validStatuses = ['preparando_envio', 'pedido_solicitado', 'enviado_transportadora', 'em_transito', 'centro_distribuicao', 'rota_entrega', 'entregue', 'ausente'];
-							if (r.status_rastreio && validStatuses.indexOf(r.status_rastreio) !== -1) {
+							
+							// Limpa marcações antigas e aplica o ✓ (check) nos status já passados
+							var currentIndex = validStatuses.indexOf(r.status_rastreio);
+							
+							$('#select_status_rastreio option').each(function() {
+								var optVal = $(this).val();
+								var optText = $(this).text().replace(/✅ /g, '');
+								
+								if (currentIndex !== -1) {
+									var optIndex = validStatuses.indexOf(optVal);
+									// Coloca ✅ se for um status anterior ou igual ao atual (exceto ausente, que só ganha ✅ se for o exato atual)
+									if (optIndex <= currentIndex && optVal !== 'ausente' && r.status_rastreio !== 'ausente') {
+										$(this).text('✅ ' + optText);
+									} else if (optVal === 'ausente' && r.status_rastreio === 'ausente') {
+										$(this).text('✅ ' + optText);
+									} else {
+										$(this).text(optText);
+									}
+								} else {
+									$(this).text(optText);
+								}
+							});
+
+							if (r.status_rastreio && currentIndex !== -1) {
 								$('#select_status_rastreio').val(r.status_rastreio);
 							} else {
 								$('#select_status_rastreio').val('preparando_envio');
