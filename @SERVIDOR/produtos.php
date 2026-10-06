@@ -109,8 +109,12 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
     <div class="container-fluid py-4">
       <div class="row">
         <div class="col-12">
+          <?php 
+          $sql_count = mysqli_query($conn, "SELECT COUNT(id) AS total FROM produto");
+          $total_produtos = ($sql_count && $row_c = mysqli_fetch_assoc($sql_count)) ? $row_c['total'] : 0;
+          ?>
           <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="text-dark">Lista de Produtos</h4>
+            <h4 class="text-dark">Produtos cadastrados: <?php echo $total_produtos; ?></h4>
             <div class="d-flex flex-wrap gap-2 justify-content-end">
               <a href="produtos_json.php?acao=baixar" class="btn btn-outline-success mb-0"><i class="material-icons align-middle me-1">download</i>Baixar lista JSON</a>
               <button type="button" class="btn btn-outline-info mb-0" onclick="document.getElementById('arquivo_json').click()"><i class="material-icons align-middle me-1">upload</i>Carregar lista JSON</button>
@@ -163,7 +167,8 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
                 }
             }
 
-            $sql = mysqli_query($conn, "SELECT * from produto ORDER BY id DESC");
+            // Ordena pelo preço (valor) em ordem decrescente, convertendo a string de moeda do formato BR para decimal.
+            $sql = mysqli_query($conn, "SELECT * from produto ORDER BY CAST(REPLACE(REPLACE(valor, '.', ''), ',', '.') AS DECIMAL(15,2)) DESC");
             if($sql && mysqli_num_rows($sql) > 0){ 
               while($row = mysqli_fetch_array($sql)){
                 $id = $row["id"];
