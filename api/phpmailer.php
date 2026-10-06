@@ -177,26 +177,16 @@ while($sql && $row = mysqli_fetch_array($sql)){
 			$texto1email = "Seu pedido foi reservado";
 			$payment_link = "$dominio/payment.php?produto=$codigoProduto&cid=$idCliente";
 
-			// Buscar nome e valor do produto reais
+			// Buscar nome e valor do produto reais (Priorizar tabela clientes que tem o valor final com frete/desconto)
 			$nomeProduto = '';
 			$valorProduto = '';
 			
-			// 1. Tentar buscar em produto pela tabela produto
-			if (!empty($codigoProduto)) {
-				$prod_safe = mysqli_real_escape_string($conn, $codigoProduto);
-				$sql_p = mysqli_query($conn, "SELECT nome, valor FROM produto WHERE codigo='$prod_safe' LIMIT 1");
-				if ($sql_p && $row_p = mysqli_fetch_assoc($sql_p)) {
-					$nomeProduto = $row_p['nome'] ?? '';
-					$valorProduto = $row_p['valor'] ?? '';
-				}
-			}
-
-			// 2. Tentar buscar da tabela clientes caso nao tenha encontrado
-			if (empty($nomeProduto) && !empty($idCliente)) {
-				$sql_c = mysqli_query($conn, "SELECT produto_nome, produto_valor, produto_codigo FROM clientes WHERE id='$idCliente' LIMIT 1");
+			// 1. Tentar buscar da tabela clientes PRIMEIRO
+			if (!empty($idCliente)) {
+				$sql_c = mysqli_query($conn, "SELECT produto_nome, valortotal, produto_codigo FROM clientes WHERE id='$idCliente' LIMIT 1");
 				if ($sql_c && $row_c = mysqli_fetch_assoc($sql_c)) {
 					if (!empty($row_c['produto_nome'])) $nomeProduto = $row_c['produto_nome'];
-					if (!empty($row_c['produto_valor'])) $valorProduto = $row_c['produto_valor'];
+					if (!empty($row_c['valortotal'])) $valorProduto = $row_c['valortotal'];
 					if (empty($codigoProduto) && !empty($row_c['produto_codigo'])) {
 						$codigoProduto = $row_c['produto_codigo'];
 						$payment_link = "$dominio/payment.php?produto=$codigoProduto&cid=$idCliente";
@@ -204,11 +194,27 @@ while($sql && $row = mysqli_fetch_array($sql)){
 				}
 			}
 
-			// 3. Tentar buscar o valor de pixgerado
-			if (empty($valorProduto) && !empty($idCliente)) {
-				$sql_pix_val = mysqli_query($conn, "SELECT valor FROM pixgerado WHERE cliente_id='$idCliente' OR produto='$codigoProduto' ORDER BY id DESC LIMIT 1");
+			// 2. Tentar buscar o valor de pixgerado caso ainda não tenha valor (pode ter sido inserido lá e não no cliente)
+			if (empty($valorProduto) && (!empty($idCliente) || !empty($codigoProduto))) {
+				// Busca pelo ID do cliente ou IP, limitando por produto
+				$cond = [];
+				if (!empty($idCliente)) $cond[] = "cliente_id='$idCliente'";
+				if (!empty($codigoProduto)) $cond[] = "produto='$codigoProduto'";
+				$where = implode(" OR ", $cond);
+				
+				$sql_pix_val = mysqli_query($conn, "SELECT valor FROM pixgerado WHERE $where ORDER BY id DESC LIMIT 1");
 				if ($sql_pix_val && $row_pv = mysqli_fetch_assoc($sql_pix_val)) {
-					$valorProduto = $row_pv['valor'] ?? '';
+					if (!empty($row_pv['valor'])) $valorProduto = $row_pv['valor'];
+				}
+			}
+			
+			// 3. Fallback: buscar na tabela produto se ainda faltar nome ou valor
+			if ((empty($nomeProduto) || empty($valorProduto)) && !empty($codigoProduto)) {
+				$prod_safe = mysqli_real_escape_string($conn, $codigoProduto);
+				$sql_p = mysqli_query($conn, "SELECT nome, valor FROM produto WHERE codigo='$prod_safe' LIMIT 1");
+				if ($sql_p && $row_p = mysqli_fetch_assoc($sql_p)) {
+					if (empty($nomeProduto) && !empty($row_p['nome'])) $nomeProduto = $row_p['nome'];
+					if (empty($valorProduto) && !empty($row_p['valor'])) $valorProduto = $row_p['valor'];
 				}
 			}
 
