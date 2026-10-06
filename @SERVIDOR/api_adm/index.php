@@ -883,6 +883,7 @@ switch($acao){
 	break; //===========================================================
 	case "buscar_cliente_status":
 		$id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+		file_put_contents("debug_status.txt", "ID recebido: " . $id . " | POST: " . print_r($_POST, true) . "\n", FILE_APPEND);
 		if ($id > 0) {
 			// Tenta primeiro no clientes direto
 			$sql = mysqli_query($conn, "SELECT id, nome, status_rastreio FROM clientes WHERE id='$id' LIMIT 1");

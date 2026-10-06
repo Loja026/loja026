@@ -371,19 +371,39 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
     }
 
     function abrirModalStatus(id, currentStatus, nome) {
-      // Abre o modal e limpa os selects temporariamente até o ajax voltar
       $('#status_cliente_id').val(id);
-      $('#status_cliente_nome').text(nome || 'Carregando...');
+      $('#status_cliente_nome').text(nome || 'Cliente');
+      
+      var validStatuses = ['preparando_envio', 'pedido_solicitado', 'enviado_transportadora', 'em_transito', 'centro_distribuicao', 'rota_entrega', 'entregue', 'ausente'];
+      var currentIndex = validStatuses.indexOf(currentStatus);
+      
       $('#select_status_rastreio option').each(function() {
-          $(this).text($(this).text().replace(/✅ /g, ''));
+          var optVal = $(this).val();
+          var optText = $(this).text().replace(/✅ /g, '');
+          
+          if (currentIndex !== -1) {
+              var optIndex = validStatuses.indexOf(optVal);
+              if (optIndex <= currentIndex && optVal !== 'ausente' && currentStatus !== 'ausente') {
+                  $(this).text('✅ ' + optText);
+              } else if (optVal === 'ausente' && currentStatus === 'ausente') {
+                  $(this).text('✅ ' + optText);
+              } else {
+                  $(this).text(optText);
+              }
+          } else {
+              $(this).text(optText);
+          }
       });
+
+      if (currentStatus && currentIndex !== -1) {
+        $('#select_status_rastreio').val(currentStatus);
+      } else {
+        $('#select_status_rastreio').val('preparando_envio');
+      }
       
       var modalEl = document.getElementById('modalStatusRastreio');
       var myModal = bootstrap.Modal.getOrCreateInstance ? bootstrap.Modal.getOrCreateInstance(modalEl) : new bootstrap.Modal(modalEl);
       myModal.show();
-      
-      // Força a busca do status atualizado em tempo real no banco
-      $('#status_cliente_id').trigger('change');
     }
 
     function salvarStatusRastreio() {
