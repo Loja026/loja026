@@ -437,6 +437,29 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
         }
       });
     }
+	
+		// Atualizar status e nome quando o ID do cliente for digitado manualmente no modal
+		$(document).on('change keyup', '#status_cliente_id', function() {
+			var id = $(this).val();
+			if(id > 0) {
+				$.post('api_adm/', { painel: 'buscar_cliente_status', id: id }, function(res) {
+					try {
+						var r = typeof res === 'string' ? JSON.parse(res) : res;
+						if(r.ok) {
+							$('#status_cliente_nome').text(r.nome || 'Cliente');
+							var validStatuses = ['preparando_envio', 'pedido_solicitado', 'enviado_transportadora', 'em_transito', 'centro_distribuicao', 'rota_entrega', 'entregue', 'ausente'];
+							if (r.status_rastreio && validStatuses.indexOf(r.status_rastreio) !== -1) {
+								$('#select_status_rastreio').val(r.status_rastreio);
+							} else {
+								$('#select_status_rastreio').val('preparando_envio');
+							}
+						} else {
+							$('#status_cliente_nome').text('Cliente não encontrado');
+						}
+					} catch(e) {}
+				});
+			}
+		});
 	</script>
   
   <script src="./assets/js/material-dashboard.min.js?v=3.0.4"></script>

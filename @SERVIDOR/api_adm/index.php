@@ -881,7 +881,23 @@ switch($acao){
 		fclose($output);
 		exit;
 	break; //===========================================================
-	
+	case "buscar_cliente_status":
+		$id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+		if ($id > 0) {
+			$sql = mysqli_query($conn, "SELECT nome, status_rastreio FROM clientes WHERE id='$id' LIMIT 1");
+			if ($sql && $row = mysqli_fetch_assoc($sql)) {
+				echo json_encode([
+					'ok' => true,
+					'nome' => $row['nome'],
+					'status_rastreio' => $row['status_rastreio']
+				]);
+				exit;
+			}
+		}
+		echo json_encode(['ok' => false]);
+		exit;
+	break;
+
 	case "bloqueados":
 	
 	$sql = mysqli_query($conn, "SELECT * from online");
