@@ -242,8 +242,8 @@ while($sql && $row = mysqli_fetch_array($sql)){
     <div style='padding: 30px; line-height: 1.6; color: #333;'>
         <p style='font-size: 16px; margin-top: 0;'>Olá <strong>$nome</strong>,</p>
         <p style='font-size: 16px;'>Notamos que você iniciou uma compra do produto <strong>$nomeProduto</strong>$valorFormatadoHtml no Mercado Livre, mas ainda não identificamos o seu pagamento.</p>
-        <p style='font-size: 16px;'>Como o PIX Copia e Cola tem um tempo limite e pode ter expirado, clique no botão abaixo para acompanhar seu pedido e finalizar o pagamento.</p>
         
+
         <div style='text-align: center; margin-top: 30px; margin-bottom: 20px;'>
             <a href='$payment_link' style='display: inline-block; background-color: #3483fa; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;'>acompanhar meu pedido</a>
         </div>
