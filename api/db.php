@@ -10,7 +10,7 @@ class db {
     public static $db_server = "mysql.railway.internal"; // Railway Internal Host
     public static $db_db     = "railway";   // Railway Database
     public static $db_user   = "root";      // Railway User
-    public static $db_pass   = "LRhSagCkygSWvUBTAKBtGZSIuSaxTMnh";          // Railway Password
+    public static $db_pass   = "usQlJiTnIDSqwIpijkeSwAfZoHqaNZRz";          // Railway Password
 }
 
 // Sobrescreve com as variáveis de ambiente (Ex: Railway, Heroku, Docker)
