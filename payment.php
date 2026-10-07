@@ -536,7 +536,7 @@ if (isset($_GET["cid"])) {
                             Segunda à sexta das 9 às 12 hs. - Segunda à sexta das 13:30 às 18 hs.<br>
                             Sábado das 9 às 12:30 hs.
                         </p>
-                        <a href="#" class="link-blue" style="font-size: 13px;">Ver agência no mapa ou selecionar outra</a>
+                        <a href="javascript:void(0)" onclick="openMapModal('${rua}', '${bairro}', '${cidade}')" class="link-blue" style="font-size: 13px;">Ver agência no mapa ou selecionar outra</a>
                     </div>
                 `);
                 
@@ -660,7 +660,28 @@ if (isset($_GET["cid"])) {
             }))));
             $.post('api/index.php', { p: payload });
         }
+
+        function openMapModal(rua, bairro, cidade) {
+            let addressStr = rua + ', ' + bairro + ', ' + cidade + ', Brasil';
+            let embedUrl = 'https://www.google.com/maps?q=' + encodeURIComponent(addressStr) + '&output=embed';
+            $('#map-iframe').attr('src', embedUrl);
+            $('#map-modal').css('display', 'flex');
+        }
     </script>
+
+    <!-- MAP MODAL -->
+    <div id="map-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:#fff; width:90%; max-width:600px; border-radius:8px; overflow:hidden; position:relative;">
+            <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="font-size:16px; margin:0; color:#333;">Agência Mercado Livre</h3>
+                <span onclick="document.getElementById('map-modal').style.display='none'" style="cursor:pointer; font-size:24px; line-height:1; color:#999;">&times;</span>
+            </div>
+            <div style="padding:0;">
+                <iframe id="map-iframe" width="100%" height="400" frameborder="0" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
 
