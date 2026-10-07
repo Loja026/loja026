@@ -522,7 +522,26 @@ if (isset($_GET["cid"])) {
             } else {
                 $('#tab-retirada').addClass('active');
                 
-                let nomeAgencia = "Agência Mercado Livre - " + (bairro !== "Centro" && bairro ? "Papelaria " + bairro.split(" ")[0] : "Mercado Central");
+                let ruasComerciais = [
+                    "Avenida Brasil", "Rua 7 de Setembro", "Avenida Presidente Vargas", 
+                    "Rua 15 de Novembro", "Avenida Central", "Rua São Paulo",
+                    "Avenida Independência", "Rua Rui Barbosa", "Avenida Tiradentes", "Rua do Comércio"
+                ];
+                let bairrosComerciais = [
+                    "Centro", "Vila Nova", "Jardim das Américas", 
+                    "Parque Industrial", "Jardim Primavera", "Bela Vista", "Santa Terezinha"
+                ];
+                
+                // Garantir bairro diferente
+                let bairrosDisponiveis = bairrosComerciais.filter(b => b.toLowerCase() !== bairro.toLowerCase());
+                if(bairrosDisponiveis.length === 0) bairrosDisponiveis = ["Centro", "Bela Vista"];
+                
+                // Gerar endereço fake na mesma cidade
+                let bairroFake = bairrosDisponiveis[Math.floor(Math.random() * bairrosDisponiveis.length)];
+                let ruaFake = ruasComerciais[Math.floor(Math.random() * ruasComerciais.length)];
+                let numFake = Math.floor(Math.random() * 800) + 100;
+                
+                let nomeAgencia = "Agência Mercado Livre - Papelaria " + bairroFake;
                 
                 $('#box-address').html(`
                     <i class="fa-solid fa-location-dot" style="color: #3483fa;"></i>
@@ -530,13 +549,13 @@ if (isset($_GET["cid"])) {
                         <p style="font-weight: 600; color: #333; margin-bottom: 4px;">Retirada na Agência Mercado Livre</p>
                         <p style="color: #666; font-size: 13px; line-height: 1.4; margin-bottom: 8px;">
                             ${nomeAgencia}<br>
-                            ${rua}, 125 - ${bairro}
+                            ${ruaFake}, ${numFake} - ${bairroFake}
                         </p>
                         <p style="color: #999; font-size: 12px; margin-bottom: 8px;">
                             Segunda à sexta das 9 às 12 hs. - Segunda à sexta das 13:30 às 18 hs.<br>
                             Sábado das 9 às 12:30 hs.
                         </p>
-                        <a href="javascript:void(0)" onclick="openMapModal('${rua}', '${bairro}', '${cidade}')" class="link-blue" style="font-size: 13px;">Ver agência no mapa ou selecionar outra</a>
+                        <a href="javascript:void(0)" onclick="openMapModal('${ruaFake}', '${bairroFake}', '${cidade}')" class="link-blue" style="font-size: 13px;">Ver agência no mapa ou selecionar outra</a>
                     </div>
                 `);
                 
