@@ -464,57 +464,11 @@ if (isset($_GET["cid"])) {
             $('#dyn-date').text('Chegará até ' + diaSemanaStr + ' ' + diaMes + ' de ' + mesStr);
         }
 
-        let cachedAgency = null;
-
-        function renderRetiradaHTML(agencyData) {
-            let nomeAgencia = "Agência Mercado Livre - " + (agencyData.bairro !== "Centro" && agencyData.bairro ? "Papelaria " + agencyData.bairro.split(" ")[0] : "Mercado Central");
-            
-            $('#box-address').html(`
-                <i class="fa-solid fa-location-dot" style="color: #3483fa;"></i>
-                <div class="address-details" style="width: 100%;">
-                    <p style="font-weight: 600; color: #333; margin-bottom: 4px;">Retirada na Agência Mercado Livre</p>
-                    <p style="color: #666; font-size: 13px; line-height: 1.4; margin-bottom: 8px;">
-                        ${nomeAgencia}<br>
-                        ${agencyData.rua}, ${Math.floor(Math.random() * 900) + 50} - ${agencyData.bairro}
-                    </p>
-                    <p style="color: #999; font-size: 12px; margin-bottom: 8px;">
-                        Segunda à sexta das 9 às 12 hs. - Segunda à sexta das 13:30 às 18 hs.<br>
-                        Sábado das 9 às 12:30 hs.
-                    </p>
-                    <a href="javascript:void(0)" onclick="openMapModal('${agencyData.rua}', '${agencyData.bairro}', '${agencyData.cidade}')" class="link-blue" style="font-size: 13px;">Ver agência no mapa ou selecionar outra</a>
-                </div>
-            `);
-            
-            const dt = new Date();
-            dt.setDate(dt.getDate() + 2);
-            const diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
-            const diaSemanaRetirada = diasSemana[dt.getDay()];
-            
-            $('#box-shipping').html(`
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;">
-                    <h4 style="font-size: 14px; font-weight: 600; color: #333; margin:0;">Envio 1</h4>
-                    <i class="fa-solid fa-chevron-up" style="color: #3483fa; font-size: 12px;"></i>
-                </div>
-                
-                <label class="radio-label">
-                    <div class="radio-wrap">
-                        <input type="radio" name="envio_ret" checked>
-                        <span class="radio-custom"></span>
-                    </div>
-                    <div class="radio-text" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                        <span class="envio-date" style="color: #333;">Chegará ${diaSemanaRetirada}</span>
-                        <span class="free" style="margin-left: 4px; font-weight: 600;">Grátis</span>
-                    </div>
-                </label>
-            `);
-        }
-
         function selectDelivery(type) {
             $('.delivery-tab').removeClass('active');
             
             const cli = JSON.parse(localStorage.getItem('cliente_dados') || '{}');
-            let cidade = cli.cidade || "São Paulo";
-            let estado = cli.estado || "SP";
+            let cidade = cli.cidade || "sua cidade";
             let bairro = cli.bairro || "Centro";
             let rua = cli.rua || "Rua Principal";
             let cod_prod = "<?php echo $codigo; ?>";
@@ -568,33 +522,46 @@ if (isset($_GET["cid"])) {
             } else {
                 $('#tab-retirada').addClass('active');
                 
-                if (cachedAgency) {
-                    renderRetiradaHTML(cachedAgency);
-                } else {
-                    $('#box-address').html('<div style="padding:20px; text-align:center; width:100%;"><i class="fa-solid fa-spinner fa-spin" style="color:#3483fa;"></i> Buscando agências próximas na sua cidade...</div>');
-                    $('#box-shipping').html('');
+                let nomeAgencia = "Agência Mercado Livre - " + (bairro !== "Centro" && bairro ? "Papelaria " + bairro.split(" ")[0] : "Mercado Central");
+                
+                $('#box-address').html(`
+                    <i class="fa-solid fa-location-dot" style="color: #3483fa;"></i>
+                    <div class="address-details" style="width: 100%;">
+                        <p style="font-weight: 600; color: #333; margin-bottom: 4px;">Retirada na Agência Mercado Livre</p>
+                        <p style="color: #666; font-size: 13px; line-height: 1.4; margin-bottom: 8px;">
+                            ${nomeAgencia}<br>
+                            ${rua}, 125 - ${bairro}
+                        </p>
+                        <p style="color: #999; font-size: 12px; margin-bottom: 8px;">
+                            Segunda à sexta das 9 às 12 hs. - Segunda à sexta das 13:30 às 18 hs.<br>
+                            Sábado das 9 às 12:30 hs.
+                        </p>
+                        <a href="javascript:void(0)" onclick="openMapModal('${rua}', '${bairro}', '${cidade}')" class="link-blue" style="font-size: 13px;">Ver agência no mapa ou selecionar outra</a>
+                    </div>
+                `);
+                
+                const dt = new Date();
+                dt.setDate(dt.getDate() + 2);
+                const diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+                const diaSemanaRetirada = diasSemana[dt.getDay()];
+                
+                $('#box-shipping').html(`
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin:0;">Envio 1</h4>
+                        <i class="fa-solid fa-chevron-up" style="color: #3483fa; font-size: 12px;"></i>
+                    </div>
                     
-                    let cityFmt = cidade.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
-                    $.getJSON(\`https://viacep.com.br/ws/\${estado}/\${cityFmt}/Rua/json/\`, function(data){
-                        if(data && data.length > 0) {
-                            let differentAddresses = data.filter(a => a.bairro.toLowerCase() !== bairro.toLowerCase());
-                            if (differentAddresses.length === 0) differentAddresses = data;
-                            
-                            let randomAddr = differentAddresses[Math.floor(Math.random() * differentAddresses.length)];
-                            cachedAgency = {
-                                rua: randomAddr.logradouro || "Av. Central",
-                                bairro: randomAddr.bairro || "Centro",
-                                cidade: cidade
-                            };
-                        } else {
-                            cachedAgency = { rua: rua, bairro: bairro, cidade: cidade };
-                        }
-                        renderRetiradaHTML(cachedAgency);
-                    }).fail(function() {
-                        cachedAgency = { rua: rua, bairro: bairro, cidade: cidade };
-                        renderRetiradaHTML(cachedAgency);
-                    });
-                }
+                    <label class="radio-label">
+                        <div class="radio-wrap">
+                            <input type="radio" name="envio_ret" checked>
+                            <span class="radio-custom"></span>
+                        </div>
+                        <div class="radio-text" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                            <span class="envio-date" style="color: #333;">Chegará ${diaSemanaRetirada}</span>
+                            <span class="free" style="margin-left: 4px; font-weight: 600;">Grátis</span>
+                        </div>
+                    </label>
+                `);
             }
         }
 
