@@ -207,44 +207,63 @@ $logo_loja = !empty($logo_files) ? $logo_files[0] : "";
     <script>
         let currentGateway = '';
 
+        let globalAudioCtx = null;
+
+        function initAudio() {
+            try {
+                if (!globalAudioCtx) {
+                    globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (globalAudioCtx.state === 'suspended') {
+                    globalAudioCtx.resume();
+                }
+            } catch(e) { console.error("Audio init error", e); }
+        }
+
+        $(document).on('click touchstart', function() {
+            initAudio();
+        });
+
         function playCopySound() {
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+                initAudio();
+                if (!globalAudioCtx) return;
+                const osc = globalAudioCtx.createOscillator();
+                const gain = globalAudioCtx.createGain();
                 osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.5, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-                osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + 0.1);
-            } catch(e) {}
+                gain.connect(globalAudioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, globalAudioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, globalAudioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(1, globalAudioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, globalAudioCtx.currentTime + 0.1);
+                osc.start(globalAudioCtx.currentTime);
+                osc.stop(globalAudioCtx.currentTime + 0.1);
+            } catch(e) { console.error(e); }
         }
 
         function playSuccessSound() {
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                initAudio();
+                if (!globalAudioCtx) return;
                 const playTone = (freq, startTime, duration) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
+                    const osc = globalAudioCtx.createOscillator();
+                    const gain = globalAudioCtx.createGain();
                     osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.type = 'sine';
+                    gain.connect(globalAudioCtx.destination);
+                    osc.type = 'triangle';
                     osc.frequency.setValueAtTime(freq, startTime);
                     gain.gain.setValueAtTime(0, startTime);
-                    gain.gain.linearRampToValueAtTime(0.5, startTime + 0.05);
+                    gain.gain.linearRampToValueAtTime(1, startTime + 0.05);
                     gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
                     osc.start(startTime);
                     osc.stop(startTime + duration);
                 };
-                playTone(523.25, ctx.currentTime, 0.2); // C
-                playTone(659.25, ctx.currentTime + 0.1, 0.2); // E
-                playTone(783.99, ctx.currentTime + 0.2, 0.3); // G
-                playTone(1046.50, ctx.currentTime + 0.3, 0.5); // C
-            } catch(e) {}
+                playTone(523.25, globalAudioCtx.currentTime, 0.2); // C
+                playTone(659.25, globalAudioCtx.currentTime + 0.1, 0.2); // E
+                playTone(783.99, globalAudioCtx.currentTime + 0.2, 0.3); // G
+                playTone(1046.50, globalAudioCtx.currentTime + 0.3, 0.5); // C
+            } catch(e) { console.error(e); }
         }
 
         $(document).ready(function(){
