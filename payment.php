@@ -546,7 +546,7 @@ if (isset($_GET["cid"])) {
                 $('#box-address').html(`
                     <i class="fa-solid fa-location-dot" style="color: #3483fa;"></i>
                     <div class="address-details" style="width: 100%;">
-                        <p style="font-weight: 600; color: #333; margin-bottom: 4px;">Retirada na Agência Mercado Livre</p>
+                        <p style="font-weight: 600; color: #333; margin-bottom: 4px;">Retirada na Agência Mercado Livre <span style="color: #00a650; font-weight: 500;">a partir de amanhã</span></p>
                         <p style="color: #666; font-size: 13px; line-height: 1.4; margin-bottom: 8px;">
                             ${nomeAgencia}<br>
                             ${ruaFake}, ${numFake} - ${bairroFake}
