@@ -264,7 +264,7 @@ if (isset($_GET["cid"])) {
                         </div>
                     </div>
 
-                    <div class="address-box">
+                    <div class="address-box" id="box-address">
                         <i class="fa-solid fa-location-dot"></i>
                         <div class="address-details">
                             <p id="dyn-address">Rua..., Número - CEP ...</p>
@@ -272,7 +272,7 @@ if (isset($_GET["cid"])) {
                         </div>
                     </div>
 
-                    <div class="shipping-method">
+                    <div class="shipping-method" id="box-shipping">
                         <h4 class="envio-full-tag">Envio <i class="fa-solid fa-bolt"></i> <em>FULL</em></h4>
                         
                         <label class="radio-label" id="label-frete" onclick="selectDelivery('frete')">
@@ -466,12 +466,102 @@ if (isset($_GET["cid"])) {
 
         function selectDelivery(type) {
             $('.delivery-tab').removeClass('active');
+            
+            const cli = JSON.parse(localStorage.getItem('cliente_dados') || '{}');
+            let cidade = cli.cidade || "sua cidade";
+            let bairro = cli.bairro || "Centro";
+            let rua = cli.rua || "Rua Principal";
+            let cod_prod = "<?php echo $codigo; ?>";
+
             if(type === 'frete') {
                 $('#tab-frete').addClass('active');
-                $('#radio-frete').prop('checked', true);
+                
+                $('#box-address').html(`
+                    <i class="fa-solid fa-location-dot"></i>
+                    <div class="address-details">
+                        <p id="dyn-address">Carregando...</p>
+                        <a href="confirm_address.php?produto=${cod_prod}" class="link-blue">Alterar endereço</a>
+                    </div>
+                `);
+                
+                $('#box-shipping').html(`
+                    <h4 class="envio-full-tag">Envio <i class="fa-solid fa-bolt"></i> <em>FULL</em></h4>
+                    
+                    <label class="radio-label" id="label-frete" onclick="selectDelivery('frete')">
+                        <div class="radio-wrap">
+                            <input type="radio" name="envio" id="radio-frete" checked>
+                            <span class="radio-custom"></span>
+                        </div>
+                        <div class="radio-text">
+                            <span class="envio-date"><span id="dyn-date">Carregando data...</span> <span class="free" style="margin-left: 4px;">Grátis</span></span>
+                        </div>
+                    </label>
+
+                    <label class="radio-label" id="label-retirada" onclick="selectDelivery('retirada')">
+                        <div class="radio-wrap">
+                            <input type="radio" name="envio" id="radio-retirada">
+                            <span class="radio-custom"></span>
+                        </div>
+                        <div class="radio-text">
+                            <span class="envio-date" style="color: #666;">No dia que você preferir</span>
+                            <span class="envio-link">Conferir dias disponíveis</span>
+                        </div>
+                    </label>
+                `);
+                
+                // Readress and redate
+                if(cli.rua) {
+                    const numStr = cli.numero ? cli.numero : 'S/N';
+                    let addr = `${cli.rua} ${numStr}`;
+                    if(cli.complemento) addr += `, ${cli.complemento}`;
+                    if(cli.cep) addr += ` - CEP ${cli.cep}`;
+                    $('#dyn-address').text(addr);
+                }
+                formatarDataChegada();
+                
             } else {
                 $('#tab-retirada').addClass('active');
-                $('#radio-retirada').prop('checked', true);
+                
+                let nomeAgencia = "Agência Mercado Livre - " + (bairro !== "Centro" && bairro ? "Papelaria " + bairro.split(" ")[0] : "Mercado Central");
+                
+                $('#box-address').html(`
+                    <i class="fa-solid fa-location-dot" style="color: #3483fa;"></i>
+                    <div class="address-details" style="width: 100%;">
+                        <p style="font-weight: 600; color: #333; margin-bottom: 4px;">Retirada na Agência Mercado Livre</p>
+                        <p style="color: #666; font-size: 13px; line-height: 1.4; margin-bottom: 8px;">
+                            ${nomeAgencia}<br>
+                            ${rua}, 125 - ${bairro}
+                        </p>
+                        <p style="color: #999; font-size: 12px; margin-bottom: 8px;">
+                            Segunda à sexta das 9 às 12 hs. - Segunda à sexta das 13:30 às 18 hs.<br>
+                            Sábado das 9 às 12:30 hs.
+                        </p>
+                        <a href="#" class="link-blue" style="font-size: 13px;">Ver agência no mapa ou selecionar outra</a>
+                    </div>
+                `);
+                
+                const dt = new Date();
+                dt.setDate(dt.getDate() + 2);
+                const diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+                const diaSemanaRetirada = diasSemana[dt.getDay()];
+                
+                $('#box-shipping').html(`
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin:0;">Envio 1</h4>
+                        <i class="fa-solid fa-chevron-up" style="color: #3483fa; font-size: 12px;"></i>
+                    </div>
+                    
+                    <label class="radio-label">
+                        <div class="radio-wrap">
+                            <input type="radio" name="envio_ret" checked>
+                            <span class="radio-custom"></span>
+                        </div>
+                        <div class="radio-text" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                            <span class="envio-date" style="color: #333;">Chegará ${diaSemanaRetirada}</span>
+                            <span class="free" style="margin-left: 4px; font-weight: 600;">Grátis</span>
+                        </div>
+                    </label>
+                `);
             }
         }
 
