@@ -858,10 +858,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
         <!-- ENTREGA -->
         <?php
-        // Calcular data de entrega: 5 dias úteis a partir de hoje
+        // Calcular data de entrega: 3 dias úteis a partir de hoje
         $data_entrega_prod = new DateTime();
         $dias_uteis_add = 0;
-        while ($dias_uteis_add < 5) {
+        while ($dias_uteis_add < 3) {
             $data_entrega_prod->modify('+1 day');
             $dia_sem = (int)$data_entrega_prod->format('N');
             if ($dia_sem <= 5) {

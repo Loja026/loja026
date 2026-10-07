@@ -243,10 +243,10 @@ if (!isset($_GET["produto"])) {
             </div>
 
             <?php
-            // Calcular data de entrega: 5 dias úteis a partir de hoje
+            // Calcular data de entrega: 3 dias úteis a partir de hoje
             $data_entrega = new DateTime();
             $dias_uteis_adicionados = 0;
-            while ($dias_uteis_adicionados < 5) {
+            while ($dias_uteis_adicionados < 3) {
                 $data_entrega->modify('+1 day');
                 $dia_semana = (int)$data_entrega->format('N'); // 1=segunda ... 7=domingo
                 if ($dia_semana <= 5) { // Somente dias úteis (seg-sex)

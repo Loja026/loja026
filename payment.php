@@ -446,7 +446,7 @@ if (isset($_GET["cid"])) {
         function formatarDataChegada() {
             const dataAtual = new Date();
             let diasUteis = 0;
-            while (diasUteis < 5) {
+            while (diasUteis < 3) {
                 dataAtual.setDate(dataAtual.getDate() + 1);
                 const diaSem = dataAtual.getDay(); // 0=dom, 6=sab
                 if (diaSem !== 0 && diaSem !== 6) {

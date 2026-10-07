@@ -315,7 +315,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (!isset($entrega_catalogo_calculada)) {
                             $data_entrega_cat = new DateTime();
                             $dias_uteis_cat = 0;
-                            while ($dias_uteis_cat < 5) {
+                            while ($dias_uteis_cat < 3) {
                                 $data_entrega_cat->modify('+1 day');
                                 if ((int)$data_entrega_cat->format('N') <= 5) $dias_uteis_cat++;
                             }
