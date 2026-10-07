@@ -566,7 +566,7 @@ if (isset($_GET["cid"])) {
                 
                 $('#box-shipping').html(`
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer;">
-                        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin:0;">Envio 1</h4>
+                        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin:0;">Retirada</h4>
                         <i class="fa-solid fa-chevron-up" style="color: #3483fa; font-size: 12px;"></i>
                     </div>
                     
@@ -577,7 +577,7 @@ if (isset($_GET["cid"])) {
                         </div>
                         <div class="radio-text" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                             <span class="envio-date" style="color: #333;">Chegará ${diaSemanaRetirada}</span>
-                            <span class="free" style="margin-left: 4px; font-weight: 600;">Grátis</span>
+                            <span class="free" style="margin-left: 4px; font-weight: 600;">Entrega grátis</span>
                         </div>
                     </label>
                 `);
