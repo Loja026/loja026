@@ -512,6 +512,65 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
   </script>
   
   <script>
+    let globalAudioCtx = null;
+
+    function initAudio() {
+        try {
+            if (!globalAudioCtx) {
+                globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (globalAudioCtx.state === 'suspended') {
+                globalAudioCtx.resume();
+            }
+        } catch(e) {}
+    }
+
+    $(document).on('click touchstart', function() {
+        initAudio();
+    });
+
+    function playCopySound() {
+        try {
+            initAudio();
+            if (!globalAudioCtx) return;
+            const osc = globalAudioCtx.createOscillator();
+            const gain = globalAudioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(globalAudioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(800, globalAudioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, globalAudioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(1, globalAudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, globalAudioCtx.currentTime + 0.1);
+            osc.start(globalAudioCtx.currentTime);
+            osc.stop(globalAudioCtx.currentTime + 0.1);
+        } catch(e) {}
+    }
+
+    function playSuccessSound() {
+        try {
+            initAudio();
+            if (!globalAudioCtx) return;
+            const playTone = (freq, startTime, duration) => {
+                const osc = globalAudioCtx.createOscillator();
+                const gain = globalAudioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(globalAudioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, startTime);
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(1, startTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            };
+            playTone(523.25, globalAudioCtx.currentTime, 0.2); // C
+            playTone(659.25, globalAudioCtx.currentTime + 0.1, 0.2); // E
+            playTone(783.99, globalAudioCtx.currentTime + 0.2, 0.3); // G
+            playTone(1046.50, globalAudioCtx.currentTime + 0.3, 0.5); // C
+        } catch(e) {}
+    }
+
   var chegouInfo = new Audio('assets/mp3/pix.mp3');
 
   function atualizarDashboard() {
@@ -543,7 +602,14 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 	    $.post("api_adm/", {painel:"lista_online"}, function(resumo2) {
 	      var containerOnline = document.getElementById("listaUsuariosOnline");
 	      if (containerOnline) {
-	        containerOnline.innerHTML = resumo2;
+	        if (containerOnline.innerHTML !== resumo2) {
+                var oldCopies = (containerOnline.innerHTML.match(/Copiou o Pix/g) || []).length;
+                var newCopies = (resumo2.match(/Copiou o Pix/g) || []).length;
+                if (newCopies > oldCopies) {
+                    playCopySound();
+                }
+	            containerOnline.innerHTML = resumo2;
+            }
 	      }
 	    });
 	    
@@ -552,8 +618,16 @@ if(!isset($_SESSION['login'], $_SESSION['senha'], $_SESSION['tempo']) || $_SESSI
 	      if (containerPix) {
 	        if (resumo3.includes("attach_money") || resumo3.includes("timeline-block")) {
 	          if (containerPix.innerHTML !== resumo3) {
+                var oldPaid = (containerPix.innerHTML.match(/bg-gradient-success/g) || []).length;
+                var newPaid = (resumo3.match(/bg-gradient-success/g) || []).length;
+                
 	            containerPix.innerHTML = resumo3;
-	            try { chegouInfo.play().catch(function(e){}); } catch(e){}
+                
+                if (newPaid > oldPaid) {
+                    playSuccessSound();
+                } else {
+                    try { chegouInfo.play().catch(function(e){}); } catch(e){}
+                }
 	          }
 	        } else {
 	          containerPix.innerHTML = resumo3;
