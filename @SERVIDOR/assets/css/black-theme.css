@@ -1857,3 +1857,13 @@ table.table {
     -webkit-text-fill-color: transparent;
     text-shadow: 0 2px 10px rgba(255,255,255,0.1);
 }
+
+/* 10. Correção para opções de formulário (Selects) */
+option {
+    background-color: #111827 !important;
+    color: #f1f5f9 !important;
+}
+
+select.form-control:focus option {
+    background-color: #1a2035 !important;
+}
