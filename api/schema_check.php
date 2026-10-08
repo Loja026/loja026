@@ -187,7 +187,15 @@ $colunas_por_tabela = [
         'useragent' => "LONGTEXT DEFAULT NULL"
     ],
     'produto' => [
-        'force_tabela_pix' => "TINYINT(1) DEFAULT 0"
+        'force_tabela_pix' => "TINYINT(1) DEFAULT 0",
+        'variacoes' => "LONGTEXT DEFAULT NULL",
+        'tipo_produto' => "VARCHAR(100) DEFAULT 'generico'",
+        'valor_original' => "VARCHAR(50) DEFAULT ''",
+        'pix_copia_e_cola' => "LONGTEXT DEFAULT NULL",
+        'categoria' => "VARCHAR(100) DEFAULT 'Geral'",
+        'produtos_relacionados' => "VARCHAR(255) DEFAULT ''",
+        'status' => "VARCHAR(50) DEFAULT 'ativo'",
+        'ordem' => "INT(11) NOT NULL DEFAULT 999"
     ],
     'apis' => [
         'smtp_ativo' => "TINYINT(1) DEFAULT 0"

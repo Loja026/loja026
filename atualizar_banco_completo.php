@@ -56,6 +56,13 @@ addColumn($conn, 'pix', 'use_pix_produto', "TINYINT(1) NOT NULL DEFAULT 1");
 // Atualizações da tabela produto
 addColumn($conn, 'produto', 'ordem', "INT(11) NOT NULL DEFAULT 999");
 addColumn($conn, 'produto', 'categoria', "VARCHAR(100) DEFAULT 'Geral'");
+addColumn($conn, 'produto', 'variacoes', "LONGTEXT DEFAULT NULL");
+addColumn($conn, 'produto', 'tipo_produto', "VARCHAR(100) DEFAULT 'generico'");
+addColumn($conn, 'produto', 'valor_original', "VARCHAR(50) DEFAULT ''");
+addColumn($conn, 'produto', 'pix_copia_e_cola', "LONGTEXT DEFAULT NULL");
+addColumn($conn, 'produto', 'produtos_relacionados', "VARCHAR(255) DEFAULT ''");
+addColumn($conn, 'produto', 'status', "VARCHAR(50) DEFAULT 'ativo'");
+addColumn($conn, 'produto', 'force_tabela_pix', "TINYINT(1) DEFAULT 0");
 
 // Atualizações da tabela config
 addColumn($conn, 'config', 'cor_botao', "VARCHAR(20) DEFAULT '#3483fa' AFTER cor");
