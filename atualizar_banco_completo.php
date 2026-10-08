@@ -64,6 +64,21 @@ addColumn($conn, 'produto', 'produtos_relacionados', "VARCHAR(255) DEFAULT ''");
 addColumn($conn, 'produto', 'status', "VARCHAR(50) DEFAULT 'ativo'");
 addColumn($conn, 'produto', 'force_tabela_pix', "TINYINT(1) DEFAULT 0");
 
+// Nova tabela para cliques de produtos por IP
+$check_table = mysqli_query($conn, "SHOW TABLES LIKE 'produto_cliques_ips'");
+if (mysqli_num_rows($check_table) == 0) {
+    mysqli_query($conn, "CREATE TABLE produto_cliques_ips (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        produto_codigo VARCHAR(255),
+        ip VARCHAR(45),
+        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_click (produto_codigo, ip)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+    echo "<p class='success'>✅ Tabela 'produto_cliques_ips' criada com sucesso!</p>";
+} else {
+    echo "<p class='info'>✔️ Tabela 'produto_cliques_ips' já existe.</p>";
+}
+
 // Atualizações da tabela config
 addColumn($conn, 'config', 'cor_botao', "VARCHAR(20) DEFAULT '#3483fa' AFTER cor");
 

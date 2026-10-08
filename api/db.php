@@ -172,6 +172,15 @@ if (!file_exists($db_schema_flag) || (time() - filemtime($db_schema_flag) > 8640
         data_venda DATETIME DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
+    // Garantir que a tabela produto_cliques_ips exista (para bloquear bots e limitar 1 clique por IP)
+    @mysqli_query($conn, "CREATE TABLE IF NOT EXISTS produto_cliques_ips (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        produto_codigo VARCHAR(255),
+        ip VARCHAR(45),
+        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_click (produto_codigo, ip)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
     // Garantir estrutura via schema_check
     require_once __DIR__ . '/schema_check.php';
 
